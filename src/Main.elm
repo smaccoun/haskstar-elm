@@ -3,7 +3,10 @@ module Main exposing (..)
 import Html exposing (Html, text, div, h1, img)
 import Html.Attributes exposing (src)
 
-import Server.Config as S
+import Server.Config as SC
+import Server.RequestUtils as SR
+
+import RemoteData exposing (WebData, RemoteData(..))
 
 
 ---- PROGRAM ----
@@ -21,32 +24,48 @@ main =
 ---- MODEL ----
 
 type alias Model =
-    {context : S.Context}
+    {context : SC.Context
+    ,remoteResponse : String
+    }
 
 initialModel : Model
 initialModel =
     {context =
-       {apiBaseUrl = "localhost:8080"}
+       {apiBaseUrl = "http://localhost:8080"}
+    , remoteResponse = ""
     }
+
+initialCmds : Cmd Msg
+initialCmds =
+  Cmd.batch
+    [Cmd.map HandleResponse (SR.getRequestString initialModel.context "/" |> RemoteData.sendRequest)
+    ]
 
 init : ( Model, Cmd Msg )
 init =
     ( initialModel
-    , Cmd.none
+    , initialCmds
     )
-
 
 ---- UPDATE ----
 
-
 type Msg
-    = NoOp
+    = HandleResponse (WebData String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
-
+    case msg of
+        HandleResponse remoteResponse ->
+            case remoteResponse of
+                Success a ->
+                    ( {model | remoteResponse = "SUCCESSFULLY RETRIEVED: " ++ a} , Cmd.none )
+                Loading ->
+                    ( {model | remoteResponse = "LOADING....."} , Cmd.none )
+                Failure e ->
+                    ( {model | remoteResponse = "Failed to load"} , Cmd.none )
+                NotAsked ->
+                    ( {model | remoteResponse = "Not Asked"} , Cmd.none )
 
 
 ---- VIEW ----
@@ -57,6 +76,7 @@ view model =
     div []
         [ img [ src "/logo.svg" ] []
         , h1 [] [ text "Create Haskstar App!" ]
+        , div [] [text model.remoteResponse]
         ]
 
 
