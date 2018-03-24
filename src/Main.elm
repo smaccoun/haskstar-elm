@@ -3,18 +3,37 @@ module Main exposing (..)
 import Html exposing (Html, text, div, h1, img)
 import Html.Attributes exposing (src)
 
+import Server.Config as S
+
+
+---- PROGRAM ----
+
+
+main : Program Never Model Msg
+main =
+    Html.program
+        { view = view
+        , init = init
+        , update = update
+        , subscriptions = always Sub.none
+        }
 
 ---- MODEL ----
 
-
 type alias Model =
-    {}
+    {context : S.Context}
 
+initialModel : Model
+initialModel =
+    {context =
+       {apiBaseUrl = "localhost:8080"}
+    }
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
-
+    ( initialModel
+    , Cmd.none
+    )
 
 
 ---- UPDATE ----
@@ -42,14 +61,4 @@ view model =
 
 
 
----- PROGRAM ----
 
-
-main : Program Never Model Msg
-main =
-    Html.program
-        { view = view
-        , init = init
-        , update = update
-        , subscriptions = always Sub.none
-        }
