@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html, text, div, h1, img)
-import Html.Attributes exposing (src)
+import Html exposing (Html, text, div, h1, img, a)
+import Html.Attributes exposing (src, href)
 
 import Server.Config as SC
 import Server.RequestUtils as SR
@@ -77,7 +77,8 @@ view model =
         [ img [ src "/haskstarLogo.png" ] []
         , img [ src "/logo.svg" ] []
         , h1 [] [ text "Create Haskstar App!" ]
-        , div [] [text model.remoteResponse]
+        , div [] [text <| "Server Response (localhost:8080/) " ++ model.remoteResponse]
+        , a [href "localhost:8080/swagger-ui"] [text "Click here to see all API endpoints (localhost:8080/swagger-ui)"]
         ]
 
 
