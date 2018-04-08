@@ -83,7 +83,16 @@ update msg model =
                     ( { model | remoteResponse = "Not Asked" }, Cmd.none )
 
         LoginPage formModel formMsg ->
-            ( { model | loginPage = Form.update LoginPanel.validation formMsg formModel }, Cmd.none )
+            case formMsg of
+                Form.Submit ->
+                    let
+                        _ =
+                            Debug.log "FORM MODEL: " (Form.getOutput formModel)
+                    in
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( { model | loginPage = Form.update LoginPanel.validation formMsg formModel }, Cmd.none )
 
 
 

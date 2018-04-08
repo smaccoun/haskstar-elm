@@ -1,10 +1,11 @@
 module Views.LoginPanel exposing (..)
 
 import Form exposing (Form)
-import Form.Input as Input
+import Form.Input as Input exposing (Input)
 import Form.Validate as Validate exposing (..)
-import Html exposing (Html, div, input, label, text)
-import Html.Events exposing (onInput)
+import Html exposing (Html, button, div, input, label, text)
+import Html.Attributes exposing (style)
+import Html.Events exposing (onClick)
 
 
 type alias LoginForm =
@@ -23,18 +24,35 @@ validation =
 view : Form () LoginForm -> Html Form.Msg
 view form =
     div []
-        [ viewInputField "Email" form
-        , viewInputField "Password" form
+        [ viewInputField "Email" Input.textInput form
+        , viewInputField "Password" Input.passwordInput form
+        , button
+            [ onClick Form.Submit ]
+            [ text "Submit" ]
         ]
 
 
-viewInputField : String -> Form () LoginForm -> Html Form.Msg
-viewInputField labelValue form =
+viewInputField : String -> Input () String -> Form () LoginForm -> Html Form.Msg
+viewInputField labelValue inputType form =
     let
         fieldId =
             String.toLower labelValue
+
+        fieldValue =
+            Form.getFieldAsString fieldId form
     in
     div []
         [ label [] [ text labelValue ]
-        , Input.textInput (Form.getFieldAsString fieldId form) []
+        , inputType (Form.getFieldAsString fieldId form) []
+        , errorFor fieldValue
         ]
+
+
+errorFor field =
+    case Debug.log "ERROR: " field.liveError of
+        Just error ->
+            -- replace toString with your own translations
+            div [ style [ ( "color", "red" ) ] ] [ text (toString error) ]
+
+        Nothing ->
+            text ""
