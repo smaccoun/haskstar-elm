@@ -1,5 +1,8 @@
 module Views.LoginPanel exposing (..)
 
+import Bulma.Elements as E
+import Bulma.Form as BForm exposing (controlInput, controlInputModifiers)
+import Bulma.Layout exposing (container)
 import Form exposing (Form)
 import Form.Input as Input exposing (Input)
 import Form.Validate as Validate exposing (..)
@@ -23,10 +26,10 @@ validation =
 
 view : Form () LoginForm -> Html Form.Msg
 view form =
-    div []
+    container [ style [ ( "width", "300px" ) ] ]
         [ viewInputField "Email" Input.textInput form
         , viewInputField "Password" Input.passwordInput form
-        , button
+        , E.button E.buttonModifiers
             [ onClick Form.Submit ]
             [ text "Submit" ]
         ]
@@ -41,9 +44,9 @@ viewInputField labelValue inputType form =
         fieldValue =
             Form.getFieldAsString fieldId form
     in
-    div []
-        [ label [] [ text labelValue ]
-        , inputType (Form.getFieldAsString fieldId form) []
+    BForm.field []
+        [ BForm.controlLabel [] [ text labelValue ]
+        , controlInput controlInputModifiers [] [] [ inputType (Form.getFieldAsString fieldId form) [] ]
         , errorFor fieldValue
         ]
 

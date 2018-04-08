@@ -1,8 +1,12 @@
 module Main exposing (..)
 
+import Bulma.CDN exposing (..)
+import Bulma.Columns exposing (..)
+import Bulma.Elements as Elements
+import Bulma.Layout exposing (..)
 import Form exposing (Form)
-import Html exposing (Html, a, div, h1, img, text)
-import Html.Attributes exposing (href, src, target)
+import Html exposing (Html, a, div, h1, img, main_, text)
+import Html.Attributes exposing (href, src, style, target)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Config as SC
 import Server.RequestUtils as SR
@@ -101,9 +105,9 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img [ src "/haskstarLogo.png" ] []
-        , img [ src "/logo.svg" ] []
+    main_ []
+        [ stylesheet
+        , fluidContainer [ style [ ( "width", "300px" ) ] ] [ Elements.easyImage Elements.Natural [] "/haskstarLogo.png" ]
         , h1 [] [ text "Create Haskstar App!" ]
         , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
         , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
