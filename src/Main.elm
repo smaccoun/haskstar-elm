@@ -132,7 +132,9 @@ update msg model =
                         newContext =
                             { curContext | jwtToken = Just jwtToken }
                     in
-                    ( { model | context = newContext }, Cmd.none )
+                    ( { model | context = newContext }
+                    , Task.perform (always (NewUrl "/admin/home")) (Task.succeed ())
+                    )
 
                 _ ->
                     ( model, Cmd.none )

@@ -41,6 +41,13 @@ update msg model =
             ( model, Cmd.none )
 
         FormMsg formMsg ->
+            let
+                updatedFormModel =
+                    Form.update LPV.validation formMsg model.formModel
+
+                modelWithUpdatedForm =
+                    { model | formModel = updatedFormModel }
+            in
             case formMsg of
                 Form.Submit ->
                     let
@@ -55,10 +62,10 @@ update msg model =
                                 Nothing ->
                                     Cmd.none
                     in
-                    ( model, submitCmd )
+                    ( modelWithUpdatedForm, submitCmd )
 
                 _ ->
-                    ( { model | formModel = Form.update LPV.validation formMsg model.formModel }
+                    ( modelWithUpdatedForm
                     , Cmd.none
                     )
 
