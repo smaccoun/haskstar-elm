@@ -2,6 +2,7 @@ module Pages.Index exposing (..)
 
 import Components.LoginPanel as LoginPanel
 import Navigation exposing (Location)
+import Pages.Admin.Index as Admin exposing (AdminRoute(..))
 import Server.Config
 import UrlParser as Url exposing ((</>), (<?>), s, top)
 
@@ -10,15 +11,11 @@ type AppPage
     = Error404
     | WelcomeScreen
     | LoginPage LoginPanel.Model
-    | AdminPageW AdminPage
+    | AdminPageW Admin.AdminPage
 
 
-type AdminPage
-    = AdminHome
-
-
-type AdminRoute
-    = AdminHomeRoute
+type AppPageMsg
+    = LoginPageMsg LoginPanel.Msg
 
 
 type Route
@@ -37,9 +34,7 @@ initializePageFromRoute serverContext route =
             LoginPage (LoginPanel.init serverContext)
 
         AdminRouteW adminRoute ->
-            case adminRoute of
-                AdminHomeRoute ->
-                    AdminPageW AdminHome
+            AdminPageW <| Admin.initializePageFromRoute serverContext adminRoute
 
 
 locationToPage : Server.Config.Context -> Location -> AppPage
@@ -54,5 +49,5 @@ routes =
     Url.oneOf
         [ Url.map Welcome top
         , Url.map Login (s "login")
-        , Url.map (AdminRouteW AdminHomeRoute) (s "admin" </> s "home")
+        , Url.map (AdminRouteW Admin.AdminHomeRoute) (s "admin" </> s "home")
         ]
