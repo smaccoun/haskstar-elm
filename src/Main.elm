@@ -7,6 +7,7 @@ import Bulma.Layout exposing (..)
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
+import Pages.Index exposing (AppPage(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Config as SC
 import Server.RequestUtils as SR
@@ -33,7 +34,7 @@ main =
 type alias Model =
     { context : SC.Context
     , remoteResponse : String
-    , loginPage : Form () LoginPanel.LoginForm
+    , currentPage : AppPage
     }
 
 
@@ -42,7 +43,7 @@ initialModel =
     { context =
         { apiBaseUrl = "http://localhost:8080" }
     , remoteResponse = ""
-    , loginPage = Form.initial [] LoginPanel.validation
+    , currentPage = LoginPage (Form.initial [] LoginPanel.validation)
     }
 
 
@@ -66,7 +67,11 @@ init =
 
 type Msg
     = HandleResponse (WebData String)
-    | LoginPage (Form () LoginPanel.LoginForm) Form.Msg
+    | PageMsgW PageMsg
+
+
+type PageMsg
+    = LoginPageMsg Form.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -86,17 +91,30 @@ update msg model =
                 NotAsked ->
                     ( { model | remoteResponse = "Not Asked" }, Cmd.none )
 
-        LoginPage formModel formMsg ->
-            case formMsg of
-                Form.Submit ->
-                    let
-                        _ =
-                            Debug.log "FORM MODEL: " (Form.getOutput formModel)
-                    in
-                    ( model, Cmd.none )
+        PageMsgW pageMsg ->
+            case pageMsg of
+                LoginPageMsg loginPageMsg ->
+                    case model.currentPage of
+                        LoginPage loginPageModel ->
+                            let
+                                newModel =
+                                    updateLoginPage loginPageMsg loginPageModel model
+                            in
+                            ( newModel, Cmd.none )
 
-                _ ->
-                    ( { model | loginPage = Form.update LoginPanel.validation formMsg formModel }, Cmd.none )
+
+updateLoginPage : Form.Msg -> Form () LoginPanel.LoginForm -> Model -> Model
+updateLoginPage formMsg formModel model =
+    case formMsg of
+        Form.Submit ->
+            model
+
+        _ ->
+            let
+                newLoginPageModel =
+                    Form.update LoginPanel.validation formMsg formModel
+            in
+            { model | currentPage = LoginPage newLoginPageModel }
 
 
 
@@ -111,5 +129,7 @@ view model =
         , h1 [] [ text "Create Haskstar App!" ]
         , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
         , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
-        , Html.map (LoginPage model.loginPage) <| LoginPanel.view model.loginPage
+        , case model.currentPage of
+            LoginPage loginPageModel ->
+                Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
         ]

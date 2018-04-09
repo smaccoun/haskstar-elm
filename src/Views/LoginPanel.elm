@@ -1,7 +1,7 @@
 module Views.LoginPanel exposing (..)
 
 import Bulma.Elements as E
-import Bulma.Form as BForm exposing (controlInput, controlInputModifiers)
+import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlPassword, controlText)
 import Bulma.Layout exposing (container)
 import Form exposing (Form)
 import Form.Input as Input exposing (Input)
@@ -27,16 +27,16 @@ validation =
 view : Form () LoginForm -> Html Form.Msg
 view form =
     container [ style [ ( "width", "300px" ) ] ]
-        [ viewInputField "Email" Input.textInput form
-        , viewInputField "Password" Input.passwordInput form
+        [ viewInputField "Email" form
+        , viewInputField "Password" form
         , E.button E.buttonModifiers
             [ onClick Form.Submit ]
             [ text "Submit" ]
         ]
 
 
-viewInputField : String -> Input () String -> Form () LoginForm -> Html Form.Msg
-viewInputField labelValue inputType form =
+viewInputField : String -> Form () LoginForm -> Html Form.Msg
+viewInputField labelValue form =
     let
         fieldId =
             String.toLower labelValue
@@ -46,7 +46,10 @@ viewInputField labelValue inputType form =
     in
     BForm.field []
         [ BForm.controlLabel [] [ text labelValue ]
-        , controlInput controlInputModifiers [] [] [ inputType (Form.getFieldAsString fieldId form) [] ]
+        , if labelValue == "Email" then
+            controlText controlInputModifiers [] [] [ Input.textInput (Form.getFieldAsString fieldId form) [] ]
+          else
+            controlPassword controlInputModifiers [] [] [ Input.passwordInput (Form.getFieldAsString fieldId form) [] ]
         , errorFor fieldValue
         ]
 
