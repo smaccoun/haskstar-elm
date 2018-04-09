@@ -4,6 +4,8 @@ import Bulma.CDN exposing (..)
 import Bulma.Columns exposing (..)
 import Bulma.Elements as Elements
 import Bulma.Layout exposing (..)
+import Bulma.Modifiers exposing (Size(..))
+import Components.LoginPanel as LoginPanel
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
@@ -12,7 +14,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config as SC
 import Server.RequestUtils as SR
-import Views.LoginPanel as LoginPanel
+import Task
 
 
 ---- PROGRAM ----
@@ -41,17 +43,20 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { context =
-        { apiBaseUrl = "http://localhost:8080", jwtToken = Nothing }
+    let
+        initialContext =
+            { apiBaseUrl = "http://localhost:8080", jwtToken = Nothing }
+    in
+    { context = initialContext
     , remoteResponse = ""
-    , currentPage = LoginPage (Form.initial [] LoginPanel.validation)
+    , currentPage = LoginPage (LoginPanel.init initialContext)
     }
 
 
 initialCmds : Cmd Msg
 initialCmds =
     Cmd.batch
-        [ Cmd.map HandleResponse (SR.getRequestString initialModel.context "/" |> RemoteData.sendRequest)
+        [ Cmd.map HandleResponse (SR.getRequestString initialModel.context "" |> RemoteData.sendRequest)
         ]
 
 
@@ -73,7 +78,7 @@ type Msg
 
 
 type PageMsg
-    = LoginPageMsg Form.Msg
+    = LoginPageMsg LoginPanel.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -114,36 +119,20 @@ update msg model =
                     case model.currentPage of
                         LoginPage loginPageModel ->
                             let
-                                ( newModel, cmd ) =
-                                    updateLoginPage loginPageMsg loginPageModel model
-
-                                _ =
-                                    Debug.log "CMD: " cmd
+                                ( uLoginModel, cmd ) =
+                                    LoginPanel.update loginPageMsg loginPageModel
                             in
-                            ( newModel, cmd )
+                            ( { model | currentPage = LoginPage uLoginModel }
+                            , Cmd.batch
+                                [ Cmd.map (\w -> PageMsgW (LoginPageMsg w)) cmd
+                                , case loginPageMsg of
+                                    LoginPanel.ReceiveLogin remoteLogin ->
+                                        Task.perform (always (ReceiveLogin remoteLogin)) (Task.succeed ())
 
-
-updateLoginPage : Form.Msg -> Form () LoginPanel.LoginForm -> Model -> ( Model, Cmd Msg )
-updateLoginPage formMsg formModel model =
-    case formMsg of
-        Form.Submit ->
-            let
-                submitCmd =
-                    case Form.getOutput formModel of
-                        Just fModel ->
-                            Cmd.map ReceiveLogin <| performLogin fModel model.context
-
-                        Nothing ->
-                            Cmd.none
-            in
-            ( model, submitCmd )
-
-        _ ->
-            let
-                newLoginPageModel =
-                    Form.update LoginPanel.validation formMsg formModel
-            in
-            ( { model | currentPage = LoginPage newLoginPageModel }, Cmd.none )
+                                    _ ->
+                                        Cmd.none
+                                ]
+                            )
 
 
 
@@ -154,12 +143,24 @@ view : Model -> Html Msg
 view model =
     main_ []
         [ stylesheet
-        , fluidContainer [ style [ ( "width", "300px" ) ] ] [ Elements.easyImage Elements.Natural [] "/haskstarLogo.png" ]
+        , hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
+            []
+            [ heroBody []
+                [ fluidContainer [ style [ ( "width", "300px" ) ] ] [ Elements.easyImage Elements.Natural [] "/haskstarLogo.png" ]
+                ]
+            ]
         , h1 [] [ text "Create Haskstar App!" ]
-        , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
-        , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
-        , div [] [ text "You can login to an amdin account by using username 'admin@haskstar.com' and password 'haskman'" ]
-        , case model.currentPage of
-            LoginPage loginPageModel ->
-                Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
+        , section NotSpaced
+            []
+            [ Elements.title Elements.H2 [] [ text "Server Connection" ]
+            , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
+            , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
+            ]
+        , section NotSpaced
+            []
+            [ div [] [ text "You can login to an admin account by using username 'admin@haskstar.com' and password 'haskman'" ]
+            , case model.currentPage of
+                LoginPage loginPageModel ->
+                    Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
+            ]
         ]

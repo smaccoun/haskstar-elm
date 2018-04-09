@@ -1,8 +1,7 @@
 module Pages.Index exposing (..)
 
-import Form exposing (Form)
-import Views.LoginPanel as LoginPanel
+import Components.LoginPanel as LoginPanel
 
 
 type AppPage
-    = LoginPage (Form () LoginPanel.LoginForm)
+    = LoginPage LoginPanel.Model
