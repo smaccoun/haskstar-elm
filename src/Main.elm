@@ -9,6 +9,7 @@ import Components.LoginPanel as LoginPanel
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
+import Navigation
 import Pages.Index exposing (AppPage(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
@@ -20,13 +21,19 @@ import Task
 ---- PROGRAM ----
 
 
-main : Program Never Model Msg
+type alias Flags =
+    { environment : String
+    , apiBaseUrl : String
+    }
+
+
+main : Program Flags Model Msg
 main =
-    Html.program
-        { view = view
-        , init = init
+    Navigation.programWithFlags UrlChange
+        { init = init
+        , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -41,28 +48,27 @@ type alias Model =
     }
 
 
-initialModel : Model
-initialModel =
+init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
     let
+        { apiBaseUrl } =
+            flags
+
         initialContext =
-            { apiBaseUrl = "http://localhost:8080", jwtToken = Nothing }
+            { apiBaseUrl = apiBaseUrl, jwtToken = Nothing }
+
+        model =
+            { context = initialContext
+            , remoteResponse = ""
+            , currentPage = LoginPage (LoginPanel.init initialContext)
+            }
+
+        initialCmds =
+            Cmd.batch
+                [ Cmd.map HandleResponse (SR.getRequestString model.context "" |> RemoteData.sendRequest)
+                ]
     in
-    { context = initialContext
-    , remoteResponse = ""
-    , currentPage = LoginPage (LoginPanel.init initialContext)
-    }
-
-
-initialCmds : Cmd Msg
-initialCmds =
-    Cmd.batch
-        [ Cmd.map HandleResponse (SR.getRequestString initialModel.context "" |> RemoteData.sendRequest)
-        ]
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel
+    ( model
     , initialCmds
     )
 
@@ -72,7 +78,8 @@ init =
 
 
 type Msg
-    = HandleResponse (WebData String)
+    = UrlChange Navigation.Location
+    | HandleResponse (WebData String)
     | PageMsgW PageMsg
     | ReceiveLogin (WebData String)
 
@@ -84,6 +91,9 @@ type PageMsg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UrlChange location ->
+            ( model, Cmd.none )
+
         HandleResponse remoteResponse ->
             case remoteResponse of
                 Success a ->
@@ -164,3 +174,12 @@ view model =
                     Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
             ]
         ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
