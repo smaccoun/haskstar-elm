@@ -47,9 +47,9 @@ viewInputField labelValue form =
     BForm.field []
         [ BForm.controlLabel [] [ text labelValue ]
         , if labelValue == "Email" then
-            controlText controlInputModifiers [] [] [ Input.textInput (Form.getFieldAsString fieldId form) [] ]
+            Input.textInput (Form.getFieldAsString fieldId form) []
           else
-            controlPassword controlInputModifiers [] [] [ Input.passwordInput (Form.getFieldAsString fieldId form) [] ]
+            Input.passwordInput (Form.getFieldAsString fieldId form) []
         , errorFor fieldValue
         ]
 

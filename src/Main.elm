@@ -9,6 +9,7 @@ import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Pages.Index exposing (AppPage(..))
 import RemoteData exposing (RemoteData(..), WebData)
+import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config as SC
 import Server.RequestUtils as SR
 import Views.LoginPanel as LoginPanel
@@ -41,7 +42,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { context =
-        { apiBaseUrl = "http://localhost:8080" }
+        { apiBaseUrl = "http://localhost:8080", jwtToken = Nothing }
     , remoteResponse = ""
     , currentPage = LoginPage (Form.initial [] LoginPanel.validation)
     }
@@ -68,6 +69,7 @@ init =
 type Msg
     = HandleResponse (WebData String)
     | PageMsgW PageMsg
+    | ReceiveLogin (WebData String)
 
 
 type PageMsg
@@ -76,7 +78,7 @@ type PageMsg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "MSG: " msg of
         HandleResponse remoteResponse ->
             case remoteResponse of
                 Success a ->
@@ -91,30 +93,66 @@ update msg model =
                 NotAsked ->
                     ( { model | remoteResponse = "Not Asked" }, Cmd.none )
 
+        ReceiveLogin loginResponse ->
+            case loginResponse of
+                Success jwtToken ->
+                    let
+                        curContext =
+                            model.context
+
+                        newContext =
+                            { curContext | jwtToken = Just jwtToken }
+                    in
+                    ( { model | context = newContext }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
         PageMsgW pageMsg ->
             case pageMsg of
                 LoginPageMsg loginPageMsg ->
                     case model.currentPage of
                         LoginPage loginPageModel ->
                             let
-                                newModel =
+                                ( newModel, cmd ) =
                                     updateLoginPage loginPageMsg loginPageModel model
+
+                                _ =
+                                    Debug.log "CMD: " cmd
                             in
-                            ( newModel, Cmd.none )
+                            ( newModel, cmd )
 
 
-updateLoginPage : Form.Msg -> Form () LoginPanel.LoginForm -> Model -> Model
+updateLoginPage : Form.Msg -> Form () LoginPanel.LoginForm -> Model -> ( Model, Cmd Msg )
 updateLoginPage formMsg formModel model =
-    case formMsg of
+    case Debug.log "FORM MSG: " formMsg of
         Form.Submit ->
-            model
+            let
+                o =
+                    Debug.log "FM: " <| formModel
+
+                submitCmd =
+                    case Form.getOutput formModel of
+                        Just fModel ->
+                            Cmd.map ReceiveLogin <| performLogin fModel model.context
+
+                        Nothing ->
+                            Cmd.none
+
+                c =
+                    Debug.log "SM: " submitCmd
+            in
+            ( model, submitCmd )
 
         _ ->
             let
                 newLoginPageModel =
                     Form.update LoginPanel.validation formMsg formModel
+
+                z =
+                    Debug.log "NEW LOGIN: " newLoginPageModel
             in
-            { model | currentPage = LoginPage newLoginPageModel }
+            ( { model | currentPage = LoginPage newLoginPageModel }, Cmd.none )
 
 
 
