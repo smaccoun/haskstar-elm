@@ -11,6 +11,7 @@ import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Link
 import Navigation
+import Pages.Admin.Home as AdminHome
 import Pages.Index exposing (AppPage(..), locationToPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
@@ -182,6 +183,9 @@ view model =
                     [ div [] [ text "You can login to an admin account by using username 'admin@haskstar.com' and password 'haskman'" ]
                     , Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
                     ]
+
+            AdminPageW adminPage ->
+                AdminHome.view
         ]
 
 
