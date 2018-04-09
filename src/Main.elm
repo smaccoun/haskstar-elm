@@ -11,7 +11,7 @@ import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Link
 import Navigation
-import Pages.Index exposing (AppPage(..), urlToPage)
+import Pages.Index exposing (AppPage(..), locationToPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config as SC
@@ -96,7 +96,7 @@ update msg model =
         UrlChange location ->
             let
                 newPage =
-                    urlToPage model.context location.pathname
+                    locationToPage model.context location
             in
             ( { model | currentPage = newPage }, Cmd.none )
 

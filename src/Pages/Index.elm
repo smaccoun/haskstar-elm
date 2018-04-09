@@ -1,8 +1,9 @@
 module Pages.Index exposing (..)
 
 import Components.LoginPanel as LoginPanel
-import Dict exposing (Dict)
+import Navigation exposing (Location)
 import Server.Config
+import UrlParser as Url exposing ((</>), (<?>), s, top)
 
 
 type AppPage
@@ -11,18 +12,31 @@ type AppPage
     | LoginPage LoginPanel.Model
 
 
-urlToPageMap : Server.Config.Context -> Dict String AppPage
-urlToPageMap context =
-    Dict.fromList
-        [ ( "/login", LoginPage (LoginPanel.init context) ) ]
+type Route
+    = Welcome
+    | Login
 
 
-urlToPage : Server.Config.Context -> String -> AppPage
-urlToPage serverContext url =
-    let
-        _ =
-            Debug.log "URL: " url
-    in
-    urlToPageMap serverContext
-        |> Dict.get url
+initializePageFromRoute : Server.Config.Context -> Route -> AppPage
+initializePageFromRoute serverContext route =
+    case route of
+        Welcome ->
+            WelcomeScreen
+
+        Login ->
+            LoginPage (LoginPanel.init serverContext)
+
+
+locationToPage : Server.Config.Context -> Location -> AppPage
+locationToPage serverContext location =
+    Url.parsePath routes location
+        |> Maybe.map (initializePageFromRoute serverContext)
         |> Maybe.withDefault Error404
+
+
+routes : Url.Parser (Route -> a) a
+routes =
+    Url.oneOf
+        [ Url.map Welcome top
+        , Url.map Login (s "login")
+        ]
