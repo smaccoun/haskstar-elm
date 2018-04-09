@@ -78,7 +78,7 @@ type PageMsg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "MSG: " msg of
+    case msg of
         HandleResponse remoteResponse ->
             case remoteResponse of
                 Success a ->
@@ -125,12 +125,9 @@ update msg model =
 
 updateLoginPage : Form.Msg -> Form () LoginPanel.LoginForm -> Model -> ( Model, Cmd Msg )
 updateLoginPage formMsg formModel model =
-    case Debug.log "FORM MSG: " formMsg of
+    case formMsg of
         Form.Submit ->
             let
-                o =
-                    Debug.log "FM: " <| formModel
-
                 submitCmd =
                     case Form.getOutput formModel of
                         Just fModel ->
@@ -138,9 +135,6 @@ updateLoginPage formMsg formModel model =
 
                         Nothing ->
                             Cmd.none
-
-                c =
-                    Debug.log "SM: " submitCmd
             in
             ( model, submitCmd )
 
@@ -148,9 +142,6 @@ updateLoginPage formMsg formModel model =
             let
                 newLoginPageModel =
                     Form.update LoginPanel.validation formMsg formModel
-
-                z =
-                    Debug.log "NEW LOGIN: " newLoginPageModel
             in
             ( { model | currentPage = LoginPage newLoginPageModel }, Cmd.none )
 
@@ -167,6 +158,7 @@ view model =
         , h1 [] [ text "Create Haskstar App!" ]
         , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
         , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
+        , div [] [ text "You can login to an amdin account by using username 'admin@haskstar.com' and password 'haskman'" ]
         , case model.currentPage of
             LoginPage loginPageModel ->
                 Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
