@@ -61,7 +61,7 @@ init flags location =
         model =
             { context = initialContext
             , remoteResponse = ""
-            , currentPage = WelcomeScreen
+            , currentPage = locationToPage initialContext location
             }
 
         initialCmds =
