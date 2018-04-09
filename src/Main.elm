@@ -9,8 +9,9 @@ import Components.LoginPanel as LoginPanel
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
+import Link
 import Navigation
-import Pages.Index exposing (AppPage(..))
+import Pages.Index exposing (AppPage(..), urlToPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config as SC
@@ -60,7 +61,7 @@ init flags location =
         model =
             { context = initialContext
             , remoteResponse = ""
-            , currentPage = LoginPage (LoginPanel.init initialContext)
+            , currentPage = WelcomeScreen
             }
 
         initialCmds =
@@ -79,6 +80,7 @@ init flags location =
 
 type Msg
     = UrlChange Navigation.Location
+    | NewUrl String
     | HandleResponse (WebData String)
     | PageMsgW PageMsg
     | ReceiveLogin (WebData String)
@@ -92,7 +94,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UrlChange location ->
-            ( model, Cmd.none )
+            let
+                newPage =
+                    urlToPage model.context location.pathname
+            in
+            ( { model | currentPage = newPage }, Cmd.none )
+
+        NewUrl destination ->
+            let
+                ( newUrlModel, cMsg ) =
+                    Link.navigate model destination
+            in
+            ( newUrlModel, cMsg )
 
         HandleResponse remoteResponse ->
             case remoteResponse of
@@ -144,6 +157,9 @@ update msg model =
                                 ]
                             )
 
+                        _ ->
+                            ( model, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -153,7 +169,26 @@ view : Model -> Html Msg
 view model =
     main_ []
         [ stylesheet
-        , hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
+        , case model.currentPage of
+            Error404 ->
+                div [] [ text "Error 404: Invalid URL" ]
+
+            WelcomeScreen ->
+                viewWelcomeScreen model
+
+            LoginPage loginPageModel ->
+                section NotSpaced
+                    []
+                    [ div [] [ text "You can login to an admin account by using username 'admin@haskstar.com' and password 'haskman'" ]
+                    , Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
+                    ]
+        ]
+
+
+viewWelcomeScreen : Model -> Html Msg
+viewWelcomeScreen model =
+    div []
+        [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
             []
             [ heroBody []
                 [ fluidContainer [ style [ ( "width", "300px" ) ] ] [ Elements.easyImage Elements.Natural [] "/haskstarLogo.png" ]
@@ -166,13 +201,7 @@ view model =
             , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
             , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
             ]
-        , section NotSpaced
-            []
-            [ div [] [ text "You can login to an admin account by using username 'admin@haskstar.com' and password 'haskman'" ]
-            , case model.currentPage of
-                LoginPage loginPageModel ->
-                    Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
-            ]
+        , a [ Link.link (NewUrl "login") ] [ text "Go to login page" ]
         ]
 
 
