@@ -3,6 +3,7 @@ module Pages.Admin.Index exposing (..)
 import Server.Config
 import Pages.Admin.Home as Home
 import Html exposing (Html)
+import UrlParser as Url exposing ((</>), (<?>), s, top)
 
 
 type AdminPage
@@ -31,3 +32,9 @@ viewAdminPage : Server.Config.Context -> AdminPage -> Html AdminPageMsg
 viewAdminPage context adminPage =
   case adminPage of
     AdminHome -> Html.map HomeMsg Home.view
+
+
+routes : List (Url.Parser (AdminRoute -> a) a)
+routes =
+        [ Url.map AdminHomeRoute (s "admin" </> s "home")
+        ]

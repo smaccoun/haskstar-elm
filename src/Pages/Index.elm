@@ -46,8 +46,14 @@ locationToPage serverContext location =
 
 routes : Url.Parser (Route -> a) a
 routes =
-    Url.oneOf
+  let
+      unprotected =
         [ Url.map Welcome top
         , Url.map Login (s "login")
         , Url.map (AdminRouteW Admin.AdminHomeRoute) (s "admin" </> s "home")
         ]
+
+      adminRoutes =
+        List.map (Url.map AdminRouteW) Admin.routes
+  in
+    Url.oneOf <| List.concatMap identity [unprotected, adminRoutes]
