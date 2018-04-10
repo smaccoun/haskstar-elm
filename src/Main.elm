@@ -11,7 +11,7 @@ import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Link
 import Navigation
-import Pages.Admin.Home as AdminHome
+import Pages.Admin.Index as AdminIndex
 import Pages.Index exposing (AppPage(..), locationToPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
@@ -89,6 +89,7 @@ type Msg
 
 type PageMsg
     = LoginPageMsg LoginPanel.Msg
+    | AdminPageMsg AdminIndex.AdminPageMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -162,6 +163,18 @@ update msg model =
 
                         _ ->
                             ( model, Cmd.none )
+                AdminPageMsg adminPageMsg ->
+                     case model.currentPage of
+                       AdminPageW adminPage ->
+                         let
+                           (updatedAdminPage, adminPageCmd) =
+                             AdminIndex.update model.context adminPage adminPageMsg
+                         in
+                         ({model | currentPage = AdminPageW updatedAdminPage}
+                         , Cmd.map (\m -> PageMsgW (AdminPageMsg m)) adminPageCmd
+                         )
+                       _ ->
+                         (model, Cmd.none)
 
 
 
@@ -187,7 +200,8 @@ view model =
                     ]
 
             AdminPageW adminPage ->
-                AdminHome.view
+              AdminIndex.viewAdminPage model.context adminPage
+                |> Html.map (\m -> PageMsgW (AdminPageMsg m))
         ]
 
 

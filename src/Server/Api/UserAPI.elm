@@ -12,7 +12,7 @@ userEndpoint =
     "user"
 
 
-getUsers : userForm -> Server.Config.Context -> Cmd (WebData String)
+getUsers : userForm -> Server.Config.Context -> Cmd (WebData User)
 getUsers userForm context =
     getRequest context
         userEndpoint
