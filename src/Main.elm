@@ -211,7 +211,9 @@ viewWelcomeScreen model =
         [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
             []
             [ heroBody []
-                [ fluidContainer [ style [ ( "width", "300px" ) ] ] [ Elements.easyImage Elements.Natural [] "/haskstarLogo.png" ]
+                [ fluidContainer [ style [("display", "flex"), ("justify-content", "center")]  ] [
+                 Elements.easyImage Elements.Natural [style [ ( "width", "300px" ) ]] "/haskstarLogo.png"
+                 ]
                 ]
             ]
         , h1 [] [ text "Create Haskstar App!" ]
