@@ -5,6 +5,7 @@ import Bulma.Columns exposing (..)
 import Bulma.Elements as Elements
 import Bulma.Layout exposing (..)
 import Bulma.Modifiers exposing (Size(..))
+import Pages.LoginPage as LoginPage
 import Components.LoginPanel as LoginPanel
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
@@ -193,11 +194,7 @@ view model =
                 viewWelcomeScreen model
 
             LoginPage loginPageModel ->
-                section NotSpaced
-                    []
-                    [ div [] [ text "You can login to an admin account by using username 'admin@haskstar.com' and password 'haskman'" ]
-                    , Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
-                    ]
+              LoginPage.view (\m -> PageMsgW (LoginPageMsg m)) loginPageModel
 
             AdminPageW adminPage ->
               AdminIndex.viewAdminPage model.context adminPage
