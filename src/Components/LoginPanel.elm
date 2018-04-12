@@ -2,6 +2,8 @@ module Components.LoginPanel exposing (..)
 
 import Form exposing (Form)
 import Html exposing (Html)
+import Html.Attributes exposing (style)
+import Bulma.Elements exposing (box)
 import RemoteData exposing (WebData)
 import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config
@@ -76,4 +78,4 @@ update msg model =
 
 view : Model -> Html Msg
 view { formModel } =
-    Html.map FormMsg <| LPV.view formModel
+    box [style [("display", "inline-flex")]] [Html.map FormMsg <| LPV.view formModel]

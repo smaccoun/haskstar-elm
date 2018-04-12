@@ -5,13 +5,14 @@ import Bulma.Columns exposing (..)
 import Bulma.Elements as Elements
 import Bulma.Layout exposing (..)
 import Bulma.Modifiers exposing (Size(..))
+import Pages.LoginPage as LoginPage
 import Components.LoginPanel as LoginPanel
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Link
 import Navigation
-import Pages.Admin.Home as AdminHome
+import Pages.Admin.Index as AdminIndex
 import Pages.Index exposing (AppPage(..), locationToPage)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
@@ -89,6 +90,7 @@ type Msg
 
 type PageMsg
     = LoginPageMsg LoginPanel.Msg
+    | AdminPageMsg AdminIndex.AdminPageMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -162,6 +164,18 @@ update msg model =
 
                         _ ->
                             ( model, Cmd.none )
+                AdminPageMsg adminPageMsg ->
+                     case model.currentPage of
+                       AdminPageW adminPage ->
+                         let
+                           (updatedAdminPage, adminPageCmd) =
+                             AdminIndex.update model.context adminPage adminPageMsg
+                         in
+                         ({model | currentPage = AdminPageW updatedAdminPage}
+                         , Cmd.map (\m -> PageMsgW (AdminPageMsg m)) adminPageCmd
+                         )
+                       _ ->
+                         (model, Cmd.none)
 
 
 
@@ -180,14 +194,11 @@ view model =
                 viewWelcomeScreen model
 
             LoginPage loginPageModel ->
-                section NotSpaced
-                    []
-                    [ div [] [ text "You can login to an admin account by using username 'admin@haskstar.com' and password 'haskman'" ]
-                    , Html.map (\m -> PageMsgW (LoginPageMsg m)) <| LoginPanel.view loginPageModel
-                    ]
+              LoginPage.view (\m -> PageMsgW (LoginPageMsg m)) loginPageModel
 
             AdminPageW adminPage ->
-                AdminHome.view
+              AdminIndex.viewAdminPage model.context adminPage
+                |> Html.map (\m -> PageMsgW (AdminPageMsg m))
         ]
 
 
@@ -197,7 +208,9 @@ viewWelcomeScreen model =
         [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
             []
             [ heroBody []
-                [ fluidContainer [ style [ ( "width", "300px" ) ] ] [ Elements.easyImage Elements.Natural [] "/haskstarLogo.png" ]
+                [ fluidContainer [ style [("display", "flex"), ("justify-content", "center")]  ] [
+                 Elements.easyImage Elements.Natural [style [ ( "width", "300px" ) ]] "/haskstarLogo.png"
+                 ]
                 ]
             ]
         , h1 [] [ text "Create Haskstar App!" ]
