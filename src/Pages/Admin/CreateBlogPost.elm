@@ -4,6 +4,7 @@ import Bulma.Columns exposing (column, columnModifiers, columns, columnsModifier
 import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlText, controlTextArea, controlTextAreaModifiers, field)
 import Html exposing (Html, div, input, label, text)
 import Html.Events exposing (onInput)
+import Markdown
 
 
 init : BlogPost
@@ -53,10 +54,8 @@ viewEditSection =
 
 
 viewPreviewSection : BlogPost -> Html Msg
-viewPreviewSection post =
-    div []
-        [ text post.content
-        ]
+viewPreviewSection { content } =
+    div [] <| Markdown.toHtml Nothing content
 
 
 type alias InputType msg =
