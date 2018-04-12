@@ -33,7 +33,13 @@ update : AdminPage -> AdminPageMsg -> ( AdminPage, Cmd AdminPageMsg )
 update adminPage msg =
     case msg of
         HomeMsg homeMsg ->
-            ( adminPage, Cmd.none )
+            case adminPage of
+                AdminHome homeModel ->
+                    let
+                        ( updatedPage, pageCmd ) =
+                            Home.update homeModel homeMsg
+                    in
+                    ( AdminHome updatedPage, Cmd.map HomeMsg pageCmd )
 
 
 viewAdminPage : Server.Config.Context -> AdminPage -> Html AdminPageMsg

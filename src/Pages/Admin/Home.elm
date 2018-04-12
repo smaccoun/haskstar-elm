@@ -1,6 +1,6 @@
 module Pages.Admin.Home exposing (..)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, h1, text)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.Index exposing (userApiResourceParams)
 import Server.Config
@@ -46,6 +46,13 @@ viewRemoteUsers remoteUsers =
 
         _ ->
             div [] [ text "..." ]
+
+
+viewUsers : List User -> Html msg
+viewUsers users =
+    div [] <|
+        h1 [] [ text "Users" ]
+            :: List.map viewUserRow users
 
 
 viewUserRow : User -> Html msg
