@@ -9,6 +9,10 @@ type Endpoint
     = Endpoint String
 
 
+type BaseRequestParams a
+    = BaseRequestParams S.Context Endpoint (Json.Decoder a)
+
+
 request : S.Context -> String -> String -> Http.Body -> Http.Expect a -> Http.Request a
 request context method url body expect =
     Http.request

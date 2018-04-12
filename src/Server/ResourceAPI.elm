@@ -1,26 +1,21 @@
 module Server.ResourceAPI exposing (..)
 
 import Http exposing (jsonBody)
-import Json.Decode exposing (Decoder, string)
+import Json.Decode exposing (list)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
-import Server.Config exposing (Context)
-import Server.RequestUtils exposing (Endpoint(..), getRequest, postRequest)
-
-
-type BaseRequestParams a
-    = BaseRequestParams Context Endpoint (Decoder a)
+import Server.RequestUtils exposing (BaseRequestParams(..), Endpoint(..), getRequest, postRequest)
 
 
 type alias RemoteCmd a =
     Cmd (WebData a)
 
 
-getContainer : BaseRequestParams (List a) -> RemoteCmd (List a)
+getContainer : BaseRequestParams a -> RemoteCmd (List a)
 getContainer (BaseRequestParams context (Endpoint endpoint) decoder) =
     getRequest context
         endpoint
-        decoder
+        (list decoder)
         |> RemoteData.sendRequest
 
 

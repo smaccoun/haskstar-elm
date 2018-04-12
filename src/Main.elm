@@ -5,7 +5,6 @@ import Bulma.Columns exposing (..)
 import Bulma.Elements as Elements
 import Bulma.Layout exposing (..)
 import Bulma.Modifiers exposing (Size(..))
-import Pages.LoginPage as LoginPage
 import Components.LoginPanel as LoginPanel
 import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
@@ -13,7 +12,8 @@ import Html.Attributes exposing (href, src, style, target)
 import Link
 import Navigation
 import Pages.Admin.Index as AdminIndex
-import Pages.Index exposing (AppPage(..), locationToPage)
+import Pages.Index exposing (AppPage(..), AppPageMsg(..), locationToPage)
+import Pages.LoginPage as LoginPage
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config as SC
@@ -60,15 +60,19 @@ init flags location =
         initialContext =
             { apiBaseUrl = apiBaseUrl, jwtToken = Nothing }
 
+        ( initPage, initPageCmd ) =
+            locationToPage initialContext location
+
         model =
             { context = initialContext
             , remoteResponse = ""
-            , currentPage = locationToPage initialContext location
+            , currentPage = initPage
             }
 
         initialCmds =
             Cmd.batch
                 [ Cmd.map HandleResponse (SR.getRequestString model.context "" |> RemoteData.sendRequest)
+                , Cmd.map PageMsgW initPageCmd
                 ]
     in
     ( model
@@ -84,13 +88,8 @@ type Msg
     = UrlChange Navigation.Location
     | NewUrl String
     | HandleResponse (WebData String)
-    | PageMsgW PageMsg
+    | PageMsgW AppPageMsg
     | ReceiveLogin (WebData String)
-
-
-type PageMsg
-    = LoginPageMsg LoginPanel.Msg
-    | AdminPageMsg AdminIndex.AdminPageMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -98,10 +97,10 @@ update msg model =
     case msg of
         UrlChange location ->
             let
-                newPage =
+                ( newPage, newPageCmd ) =
                     locationToPage model.context location
             in
-            ( { model | currentPage = newPage }, Cmd.none )
+            ( { model | currentPage = newPage }, Cmd.map PageMsgW newPageCmd )
 
         NewUrl destination ->
             let
@@ -142,40 +141,22 @@ update msg model =
                     ( model, Cmd.none )
 
         PageMsgW pageMsg ->
-            case pageMsg of
-                LoginPageMsg loginPageMsg ->
-                    case model.currentPage of
-                        LoginPage loginPageModel ->
-                            let
-                                ( uLoginModel, cmd ) =
-                                    LoginPanel.update loginPageMsg loginPageModel
-                            in
-                            ( { model | currentPage = LoginPage uLoginModel }
-                            , Cmd.batch
-                                [ Cmd.map (\w -> PageMsgW (LoginPageMsg w)) cmd
-                                , case loginPageMsg of
-                                    LoginPanel.ReceiveLogin remoteLogin ->
-                                        Task.perform (always (ReceiveLogin remoteLogin)) (Task.succeed ())
+            let
+                ( page, pageCmd ) =
+                    Pages.Index.update pageMsg model.currentPage
 
-                                    _ ->
-                                        Cmd.none
-                                ]
-                            )
+                extraPageCmd =
+                    case pageMsg of
+                        LoginPageMsg (LoginPanel.ReceiveLogin jwtToken) ->
+                            Task.perform (always (ReceiveLogin jwtToken)) (Task.succeed ())
 
                         _ ->
-                            ( model, Cmd.none )
-                AdminPageMsg adminPageMsg ->
-                     case model.currentPage of
-                       AdminPageW adminPage ->
-                         let
-                           (updatedAdminPage, adminPageCmd) =
-                             AdminIndex.update model.context adminPage adminPageMsg
-                         in
-                         ({model | currentPage = AdminPageW updatedAdminPage}
-                         , Cmd.map (\m -> PageMsgW (AdminPageMsg m)) adminPageCmd
-                         )
-                       _ ->
-                         (model, Cmd.none)
+                            Cmd.none
+            in
+            { model | currentPage = page }
+                ! [ Cmd.map PageMsgW pageCmd
+                  , extraPageCmd
+                  ]
 
 
 
@@ -194,11 +175,11 @@ view model =
                 viewWelcomeScreen model
 
             LoginPage loginPageModel ->
-              LoginPage.view (\m -> PageMsgW (LoginPageMsg m)) loginPageModel
+                LoginPage.view (\m -> PageMsgW (LoginPageMsg m)) loginPageModel
 
             AdminPageW adminPage ->
-              AdminIndex.viewAdminPage model.context adminPage
-                |> Html.map (\m -> PageMsgW (AdminPageMsg m))
+                AdminIndex.viewAdminPage model.context adminPage
+                    |> Html.map (\m -> PageMsgW (AdminPageMsg m))
         ]
 
 
@@ -208,9 +189,9 @@ viewWelcomeScreen model =
         [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
             []
             [ heroBody []
-                [ fluidContainer [ style [("display", "flex"), ("justify-content", "center")]  ] [
-                 Elements.easyImage Elements.Natural [style [ ( "width", "300px" ) ]] "/haskstarLogo.png"
-                 ]
+                [ fluidContainer [ style [ ( "display", "flex" ), ( "justify-content", "center" ) ] ]
+                    [ Elements.easyImage Elements.Natural [ style [ ( "width", "300px" ) ] ] "/haskstarLogo.png"
+                    ]
                 ]
             ]
         , h1 [] [ text "Create Haskstar App!" ]
