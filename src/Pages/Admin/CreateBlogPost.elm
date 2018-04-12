@@ -1,7 +1,7 @@
 module Pages.Admin.CreateBlogPost exposing (..)
 
 import Bulma.Columns exposing (column, columnModifiers, columns, columnsModifiers)
-import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlText, field)
+import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlText, controlTextArea, controlTextAreaModifiers, field)
 import Html exposing (Html, div, input, label, text)
 import Html.Events exposing (onInput)
 
@@ -47,8 +47,8 @@ viewEditSection : Html Msg
 viewEditSection =
     div []
         [ text "Make a blog!"
-        , viewInputField "Title" SetTitle
-        , viewInputField "Content" SetContent
+        , viewInputField "Title" asText SetTitle
+        , viewInputField "Content" asTextArea SetContent
         ]
 
 
@@ -59,9 +59,26 @@ viewPreviewSection post =
         ]
 
 
-viewInputField : String -> (String -> Msg) -> Html Msg
-viewInputField label msgC =
+type alias InputType msg =
+    List (Html.Attribute msg)
+    -> List (Html.Attribute msg)
+    -> List (Html msg)
+    -> BForm.Control msg
+
+
+asText : InputType Msg
+asText =
+    controlInput controlInputModifiers
+
+
+asTextArea : InputType Msg
+asTextArea =
+    controlTextArea controlTextAreaModifiers
+
+
+viewInputField : String -> InputType Msg -> (String -> Msg) -> Html Msg
+viewInputField label asInputType msgC =
     field []
         [ BForm.controlLabel [] [ text label ]
-        , controlInput controlInputModifiers [] [ onInput msgC ] []
+        , asInputType [] [ onInput msgC ] []
         ]
