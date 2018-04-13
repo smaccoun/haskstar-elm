@@ -6,7 +6,6 @@ import Bulma.Elements as Elements
 import Bulma.Layout exposing (..)
 import Bulma.Modifiers exposing (Size(..))
 import Components.LoginPanel as LoginPanel
-import Form exposing (Form)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Link
@@ -15,10 +14,10 @@ import Pages.Admin.Index as AdminIndex
 import Pages.Index exposing (AppPage(..), AppPageMsg(..), locationToPage)
 import Pages.LoginPage as LoginPage
 import RemoteData exposing (RemoteData(..), WebData)
-import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config as SC
 import Server.RequestUtils as SR
 import Task
+import Types.Login exposing (LoginResponse)
 
 
 ---- PROGRAM ----
@@ -89,7 +88,7 @@ type Msg
     | NewUrl String
     | HandleResponse (WebData String)
     | PageMsgW AppPageMsg
-    | ReceiveLogin (WebData String)
+    | ReceiveLogin (WebData LoginResponse)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -125,7 +124,7 @@ update msg model =
 
         ReceiveLogin loginResponse ->
             case loginResponse of
-                Success jwtToken ->
+                Success { jwtToken } ->
                     let
                         curContext =
                             model.context

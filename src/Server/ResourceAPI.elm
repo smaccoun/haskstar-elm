@@ -4,7 +4,8 @@ import Http exposing (jsonBody)
 import Json.Decode exposing (list)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
-import Server.RequestUtils exposing (BaseRequestParams(..), Endpoint(..), getRequest, postRequest)
+import Server.Config exposing (Endpoint(..))
+import Server.RequestUtils exposing (BaseRequestParams(..), getRequest, postRequest)
 
 
 type alias RemoteCmd a =
@@ -12,7 +13,7 @@ type alias RemoteCmd a =
 
 
 getContainer : BaseRequestParams a -> RemoteCmd (List a)
-getContainer (BaseRequestParams context (Endpoint endpoint) decoder) =
+getContainer (BaseRequestParams context endpoint decoder) =
     getRequest context
         endpoint
         (list decoder)
@@ -22,13 +23,13 @@ getContainer (BaseRequestParams context (Endpoint endpoint) decoder) =
 getItem : BaseRequestParams a -> String -> RemoteCmd a
 getItem (BaseRequestParams context (Endpoint endpoint) decoder) uuid =
     getRequest context
-        (endpoint ++ "/" ++ uuid)
+        (Endpoint <| endpoint ++ "/" ++ uuid)
         decoder
         |> RemoteData.sendRequest
 
 
 createItem : BaseRequestParams a -> Value -> RemoteCmd a
-createItem (BaseRequestParams context (Endpoint endpoint) decoder) encodedValue =
+createItem (BaseRequestParams context endpoint decoder) encodedValue =
     postRequest context
         endpoint
         (jsonBody encodedValue)
@@ -39,7 +40,7 @@ createItem (BaseRequestParams context (Endpoint endpoint) decoder) encodedValue 
 updateItem : BaseRequestParams a -> Value -> String -> RemoteCmd a
 updateItem (BaseRequestParams context (Endpoint endpoint) decoder) encodedValue uuid =
     postRequest context
-        (endpoint ++ "/update/" ++ uuid)
+        (Endpoint <| endpoint ++ "/update/" ++ uuid)
         (jsonBody encodedValue)
         decoder
         |> RemoteData.sendRequest

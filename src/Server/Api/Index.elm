@@ -1,7 +1,7 @@
 module Server.Api.Index exposing (..)
 
-import Server.Config exposing (Context)
-import Server.RequestUtils exposing (BaseRequestParams(..), Endpoint(..))
+import Server.Config exposing (Context, Endpoint(..))
+import Server.RequestUtils exposing (BaseRequestParams(..))
 import Types.User exposing (User, userDecoder)
 
 
@@ -13,3 +13,8 @@ userEndpoint =
 userApiResourceParams : Context -> BaseRequestParams User
 userApiResourceParams context =
     BaseRequestParams context userEndpoint userDecoder
+
+
+loginEndpoint : Endpoint
+loginEndpoint =
+    Endpoint "login"
