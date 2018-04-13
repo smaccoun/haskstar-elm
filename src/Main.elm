@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Bulma.CDN exposing (..)
+import Bulma.Components exposing (navbar, navbarEnd, navbarItemLink, navbarLink, navbarMenu, navbarModifiers)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Link
 import Navigation
@@ -146,6 +147,7 @@ view : Model -> Html Msg
 view model =
     main_ []
         [ stylesheet
+        , myNavbar True True
         , case model.currentPage of
             Error404 ->
                 div [] [ text "Error 404: Invalid URL" ]
@@ -159,6 +161,26 @@ view model =
             AdminPageW adminPage ->
                 AdminIndex.viewAdminPage model.context adminPage
                     |> Html.map (\m -> PageMsgW (AdminPageMsg m))
+        ]
+
+
+myNavbarLink : Html Msg
+myNavbarLink =
+    navbarLink []
+        [ text "More Junk"
+        ]
+
+
+myNavbar : Bool -> Bool -> Html Msg
+myNavbar isMenuOpen isMenuDropdownOpen =
+    navbar navbarModifiers
+        []
+        [ navbarMenu isMenuOpen
+            []
+            [ navbarEnd []
+                [ navbarItemLink True [ Link.link (NewUrl "login") ] [ text "Login" ]
+                ]
+            ]
         ]
 
 
