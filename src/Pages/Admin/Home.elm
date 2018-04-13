@@ -1,5 +1,7 @@
 module Pages.Admin.Home exposing (..)
 
+import Bulma.Columns exposing (..)
+import Bulma.Components exposing (..)
 import Html exposing (Html, div, h1, text)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.Index exposing (userApiResourceParams)
@@ -32,9 +34,29 @@ update model msg =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ text "Welcome admin!"
-        , viewRemoteUsers model.users
+    columns columnsModifiers
+        []
+        [ column columnModifiers [] [ viewMenu ]
+        , column columnModifiers [] [ viewRemoteUsers model.users ]
+        ]
+
+
+myNavbarBurger : Html Msg
+myNavbarBurger =
+    navbarBurger True
+        []
+        [ div [] []
+        , div [] []
+        , div [] []
+        ]
+
+
+viewMenu =
+    menu []
+        [ menuLabel [] [ text "General" ]
+        , menuList []
+            [ menuListItemLink False [] [ text "Dashboard" ]
+            ]
         ]
 
 
@@ -42,7 +64,7 @@ viewRemoteUsers : WebData (List User) -> Html msg
 viewRemoteUsers remoteUsers =
     case remoteUsers of
         Success users ->
-            div [] (List.map viewUserRow users)
+            div [] [ viewUsers users ]
 
         _ ->
             div [] [ text "..." ]
