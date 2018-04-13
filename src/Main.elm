@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Bulma.CDN exposing (..)
 import Bulma.Components exposing (navbar, navbarEnd, navbarItemLink, navbarLink, navbarMenu, navbarModifiers)
+import Components.Navbar exposing (viewNavbar)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Link
 import Navigation
@@ -147,7 +148,7 @@ view : Model -> Html Msg
 view model =
     main_ []
         [ stylesheet
-        , viewNavbar True True model.currentPage
+        , viewNavbar True True model.currentPage NewUrl
         , case model.currentPage of
             Error404 ->
                 div [] [ text "Error 404: Invalid URL" ]
@@ -161,28 +162,6 @@ view model =
             AdminPageW adminPage ->
                 AdminIndex.viewAdminPage model.context adminPage
                     |> Html.map (\m -> PageMsgW (AdminPageMsg m))
-        ]
-
-
-viewNavbar : Bool -> Bool -> AppPage -> Html Msg
-viewNavbar isMenuOpen isMenuDropdownOpen curPage =
-    let
-        matchesPage linkPage =
-            case curPage of
-                LoginPage _ ->
-                    LoginPage == linkPage
-
-                _ ->
-                    False
-    in
-    navbar navbarModifiers
-        []
-        [ navbarMenu isMenuOpen
-            []
-            [ navbarEnd []
-                [ navbarItemLink (matchesPage LoginPage) [ Link.link (NewUrl "login") ] [ text "Login" ]
-                ]
-            ]
         ]
 
 
