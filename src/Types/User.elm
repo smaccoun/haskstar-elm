@@ -13,5 +13,5 @@ type alias User =
 userDecoder : Decoder User
 userDecoder =
     decode User
-        |> required "userId" string
-        |> required "email" string
+        |> required "_id" string
+        |> required "_email" string

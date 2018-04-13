@@ -4,12 +4,13 @@ import Html exposing (Html)
 import Pages.Admin.CreateBlogPost as CreateBlogPost
 import Pages.Admin.Home as Home
 import Server.Config
+import Types.BlogPost exposing (BlogPost)
 import UrlParser as Url exposing ((</>), (<?>), s, top)
 
 
 type AdminPage
-    = AdminHome
-    | CreateBlogPost CreateBlogPost.BlogPost
+    = AdminHome Home.Model
+    | CreateBlogPost BlogPost
 
 
 type AdminRoute
@@ -22,21 +23,34 @@ type AdminPageMsg
     | CreateBlogPostMsg CreateBlogPost.Msg
 
 
-initializePageFromRoute : Server.Config.Context -> AdminRoute -> AdminPage
+initializePageFromRoute : Server.Config.Context -> AdminRoute -> ( AdminPage, Cmd AdminPageMsg )
 initializePageFromRoute serverContext route =
     case route of
         AdminHomeRoute ->
-            AdminHome
+            let
+                ( initialPage, initialCmd ) =
+                    Home.init serverContext
+            in
+            ( AdminHome initialPage, Cmd.map HomeMsg initialCmd )
 
         CreateBlogPostRoute ->
-            CreateBlogPost CreateBlogPost.init
+            CreateBlogPost CreateBlogPost.init ! []
 
 
-update : Server.Config.Context -> AdminPage -> AdminPageMsg -> ( AdminPage, Cmd AdminPageMsg )
-update serverContext adminPage msg =
+update : AdminPage -> AdminPageMsg -> ( AdminPage, Cmd AdminPageMsg )
+update adminPage msg =
     case msg of
         HomeMsg homeMsg ->
-            ( adminPage, Cmd.none )
+            case adminPage of
+                AdminHome homeModel ->
+                    let
+                        ( updatedPage, pageCmd ) =
+                            Home.update homeModel homeMsg
+                    in
+                    ( AdminHome updatedPage, Cmd.map HomeMsg pageCmd )
+
+                _ ->
+                    ( adminPage, Cmd.none )
 
         CreateBlogPostMsg bmsg ->
             case adminPage of
@@ -54,8 +68,8 @@ update serverContext adminPage msg =
 viewAdminPage : Server.Config.Context -> AdminPage -> Html AdminPageMsg
 viewAdminPage context adminPage =
     case adminPage of
-        AdminHome ->
-            Html.map HomeMsg Home.view
+        AdminHome homeModel ->
+            Html.map HomeMsg <| Home.view homeModel
 
         CreateBlogPost blogPost ->
             Html.map CreateBlogPostMsg <| CreateBlogPost.view blogPost
