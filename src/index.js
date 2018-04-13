@@ -23,11 +23,12 @@ function bootApp() {
   console.log(apiBaseUrl)
   let elmOpts = {
       environment,
-      apiBaseUrl
+      apiBaseUrl,
+      jwtToken: null
     };
 
   if(storedToken){
-    elmOpts['jwtToken'] = storedToken    
+    elmOpts.jwtToken = storedToken    
   }
 
   var app = Main.fullscreen(elmOpts);
