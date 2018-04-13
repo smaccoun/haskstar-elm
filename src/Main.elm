@@ -1,16 +1,13 @@
 module Main exposing (..)
 
 import Bulma.CDN exposing (..)
-import Bulma.Elements as Elements
-import Bulma.Layout exposing (..)
-import Bulma.Modifiers exposing (Size(..))
 import Html exposing (Html, a, div, h1, img, main_, text)
-import Html.Attributes exposing (href, src, style, target)
 import Link
 import Navigation
 import Pages.Admin.Index as AdminIndex
 import Pages.Index exposing (AppPage(..), AppPageMsg(..), locationToPage)
 import Pages.LoginPage as LoginPage
+import Pages.Welcome exposing (viewWelcomeScreen)
 import Ports exposing (receiveToken, saveToken)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Config as SC
@@ -154,7 +151,7 @@ view model =
                 div [] [ text "Error 404: Invalid URL" ]
 
             WelcomeScreen ->
-                viewWelcomeScreen model
+                viewWelcomeScreen model.remoteResponse NewUrl
 
             LoginPage loginPageModel ->
                 LoginPage.view (\m -> PageMsgW (LoginPageMsg m)) loginPageModel
@@ -162,28 +159,6 @@ view model =
             AdminPageW adminPage ->
                 AdminIndex.viewAdminPage model.context adminPage
                     |> Html.map (\m -> PageMsgW (AdminPageMsg m))
-        ]
-
-
-viewWelcomeScreen : Model -> Html Msg
-viewWelcomeScreen model =
-    div []
-        [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
-            []
-            [ heroBody []
-                [ fluidContainer [ style [ ( "display", "flex" ), ( "justify-content", "center" ) ] ]
-                    [ Elements.easyImage Elements.Natural [ style [ ( "width", "300px" ) ] ] "/haskstarLogo.png"
-                    ]
-                ]
-            ]
-        , h1 [] [ text "Create Haskstar App!" ]
-        , section NotSpaced
-            []
-            [ Elements.title Elements.H2 [] [ text "Server Connection" ]
-            , div [] [ text <| "Server Response (localhost:8080/) " ++ model.remoteResponse ]
-            , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
-            ]
-        , a [ Link.link (NewUrl "login") ] [ text "Go to login page" ]
         ]
 
 
