@@ -1,11 +1,9 @@
 module Main exposing (..)
 
 import Bulma.CDN exposing (..)
-import Bulma.Columns exposing (..)
 import Bulma.Elements as Elements
 import Bulma.Layout exposing (..)
 import Bulma.Modifiers exposing (Size(..))
-import Components.LoginPanel as LoginPanel
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Html.Attributes exposing (href, src, style, target)
 import Link
@@ -13,11 +11,11 @@ import Navigation
 import Pages.Admin.Index as AdminIndex
 import Pages.Index exposing (AppPage(..), AppPageMsg(..), locationToPage)
 import Pages.LoginPage as LoginPage
+import Ports exposing (receiveToken, saveToken)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Config as SC
 import Server.RequestUtils as SR
 import Task
-import Types.Login exposing (LoginResponse)
 
 
 ---- PROGRAM ----
@@ -26,6 +24,7 @@ import Types.Login exposing (LoginResponse)
 type alias Flags =
     { environment : String
     , apiBaseUrl : String
+    , jwtToken : Maybe String
     }
 
 
@@ -53,11 +52,11 @@ type alias Model =
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
     let
-        { apiBaseUrl } =
+        { apiBaseUrl, jwtToken } =
             flags
 
         initialContext =
-            { apiBaseUrl = apiBaseUrl, jwtToken = Nothing }
+            { apiBaseUrl = apiBaseUrl, jwtToken = jwtToken }
 
         ( initPage, initPageCmd ) =
             locationToPage initialContext location
@@ -88,7 +87,7 @@ type Msg
     | NewUrl String
     | HandleResponse (WebData String)
     | PageMsgW AppPageMsg
-    | ReceiveLogin (WebData LoginResponse)
+    | ReceiveToken String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -122,40 +121,24 @@ update msg model =
                 NotAsked ->
                     ( { model | remoteResponse = "Not Asked" }, Cmd.none )
 
-        ReceiveLogin loginResponse ->
-            case loginResponse of
-                Success { jwtToken } ->
-                    let
-                        curContext =
-                            model.context
+        ReceiveToken jwtToken ->
+            let
+                curContext =
+                    model.context
 
-                        newContext =
-                            { curContext | jwtToken = Just jwtToken }
-                    in
-                    ( { model | context = newContext }
-                    , Task.perform (always (NewUrl "/admin/home")) (Task.succeed ())
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+                updatedContext =
+                    { curContext | jwtToken = Just jwtToken }
+            in
+            { model | context = updatedContext }
+                ! [ Task.perform (always (NewUrl "/admin/home")) (Task.succeed ()) ]
 
         PageMsgW pageMsg ->
             let
                 ( page, pageCmd ) =
                     Pages.Index.update pageMsg model.currentPage
-
-                extraPageCmd =
-                    case pageMsg of
-                        LoginPageMsg (LoginPanel.ReceiveLogin jwtToken) ->
-                            Task.perform (always (ReceiveLogin jwtToken)) (Task.succeed ())
-
-                        _ ->
-                            Cmd.none
             in
             { model | currentPage = page }
-                ! [ Cmd.map PageMsgW pageCmd
-                  , extraPageCmd
-                  ]
+                ! [ Cmd.map PageMsgW pageCmd ]
 
 
 
@@ -210,4 +193,5 @@ viewWelcomeScreen model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ receiveToken ReceiveToken ]

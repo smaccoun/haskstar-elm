@@ -4,7 +4,8 @@ import Bulma.Elements exposing (box)
 import Form exposing (Form)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
-import RemoteData exposing (WebData)
+import Ports exposing (saveToken)
+import RemoteData as RD exposing (WebData)
 import Server.Api.AuthAPI exposing (performLogin)
 import Server.Config
 import Types.Login exposing (LoginForm, LoginResponse)
@@ -39,8 +40,13 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReceiveLogin remoteData ->
-            ( model, Cmd.none )
+        ReceiveLogin remoteResult ->
+            case remoteResult of
+                RD.Success { jwtToken } ->
+                    ( model, saveToken jwtToken )
+
+                _ ->
+                    ( model, Cmd.none )
 
         FormMsg formMsg ->
             let
