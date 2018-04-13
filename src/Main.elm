@@ -147,7 +147,7 @@ view : Model -> Html Msg
 view model =
     main_ []
         [ stylesheet
-        , myNavbar True True
+        , viewNavbar True True model.currentPage
         , case model.currentPage of
             Error404 ->
                 div [] [ text "Error 404: Invalid URL" ]
@@ -164,21 +164,23 @@ view model =
         ]
 
 
-myNavbarLink : Html Msg
-myNavbarLink =
-    navbarLink []
-        [ text "More Junk"
-        ]
+viewNavbar : Bool -> Bool -> AppPage -> Html Msg
+viewNavbar isMenuOpen isMenuDropdownOpen curPage =
+    let
+        matchesPage linkPage =
+            case curPage of
+                LoginPage _ ->
+                    LoginPage == linkPage
 
-
-myNavbar : Bool -> Bool -> Html Msg
-myNavbar isMenuOpen isMenuDropdownOpen =
+                _ ->
+                    False
+    in
     navbar navbarModifiers
         []
         [ navbarMenu isMenuOpen
             []
             [ navbarEnd []
-                [ navbarItemLink True [ Link.link (NewUrl "login") ] [ text "Login" ]
+                [ navbarItemLink (matchesPage LoginPage) [ Link.link (NewUrl "login") ] [ text "Login" ]
                 ]
             ]
         ]
