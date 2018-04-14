@@ -18,3 +18,8 @@ userApiResourceParams context =
 loginEndpoint : Endpoint
 loginEndpoint =
     Endpoint "login"
+
+
+blogPostEndpoint : Endpoint
+blogPostEndpoint =
+    Endpoint "blogPost"

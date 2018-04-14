@@ -4,13 +4,12 @@ import Html exposing (Html)
 import Pages.Admin.CreateBlogPost as CreateBlogPost
 import Pages.Admin.Home as Home
 import Server.Config
-import Types.BlogPost exposing (BlogPost)
 import UrlParser as Url exposing ((</>), (<?>), s, top)
 
 
 type AdminPage
     = AdminHome Home.Model
-    | CreateBlogPost BlogPost
+    | CreateBlogPost CreateBlogPost.Model
 
 
 type AdminRoute
@@ -34,7 +33,7 @@ initializePageFromRoute serverContext route =
             ( AdminHome initialPage, Cmd.map HomeMsg initialCmd )
 
         CreateBlogPostRoute ->
-            CreateBlogPost CreateBlogPost.init ! []
+            CreateBlogPost (CreateBlogPost.init serverContext) ! []
 
 
 update : AdminPage -> AdminPageMsg -> ( AdminPage, Cmd AdminPageMsg )
@@ -56,10 +55,10 @@ update adminPage msg =
             case adminPage of
                 CreateBlogPost blogPost ->
                     let
-                        updatedPage =
+                        ( updatedPage, pageCmd ) =
                             CreateBlogPost.update bmsg blogPost
                     in
-                    ( CreateBlogPost updatedPage, Cmd.none )
+                    ( CreateBlogPost updatedPage, Cmd.map CreateBlogPostMsg pageCmd )
 
                 _ ->
                     ( adminPage, Cmd.none )

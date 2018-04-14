@@ -1,50 +1,95 @@
 module Pages.Admin.CreateBlogPost exposing (..)
 
 import Bulma.Columns exposing (column, columnModifiers, columns, columnsModifiers)
+import Bulma.Elements exposing (button, buttonModifiers)
 import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlText, controlTextArea, controlTextAreaModifiers, field)
+import Bulma.Modifiers exposing (Color(..))
 import Html exposing (Html, div, input, label, text)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Markdown exposing (toHtml)
-import Types.BlogPost exposing (BlogPost)
+import RemoteData exposing (WebData)
+import Server.Api.Index exposing (blogPostEndpoint)
+import Server.Config exposing (Context)
+import Server.RequestUtils exposing (BaseRequestParams(..))
+import Server.ResourceAPI exposing (RemoteCmd, createItem)
+import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
 
 
-init : BlogPost
-init =
+initPost : BlogPost
+initPost =
     { title = ""
     , content = ""
+    }
+
+
+init : Context -> Model
+init context =
+    { post = initPost
+    , context = context
+    }
+
+
+type alias Model =
+    { context : Context
+    , post : BlogPost
     }
 
 
 type Msg
     = SetTitle String
     | SetContent String
+    | ReceiveSubmittedBlog (WebData BlogPost)
+    | SubmitBlog
 
 
-update : Msg -> BlogPost -> BlogPost
-update msg post =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         SetTitle title ->
-            { post | title = title }
+            let
+                curPost =
+                    model.post
+
+                updatedPost =
+                    { curPost | title = title }
+            in
+            { model | post = updatedPost } ! []
 
         SetContent content ->
-            { post | content = content }
+            let
+                curPost =
+                    model.post
+
+                updatedPost =
+                    { curPost | content = content }
+            in
+            { model | post = updatedPost } ! []
+
+        SubmitBlog ->
+            model
+                ! [ Cmd.map ReceiveSubmittedBlog <| submitPost model.context model.post ]
+
+        ReceiveSubmittedBlog result ->
+            model ! []
 
 
-view : BlogPost -> Html Msg
-view post =
+view : Model -> Html Msg
+view model =
     columns columnsModifiers
         []
-        [ column columnModifiers [] [ viewEditSection ]
-        , column columnModifiers [] [ viewPreviewSection post ]
+        [ column columnModifiers [] [ viewEditSection model ]
+        , column columnModifiers [] [ viewPreviewSection model.post ]
         ]
 
 
-viewEditSection : Html Msg
-viewEditSection =
+viewEditSection : Model -> Html Msg
+viewEditSection model =
     div []
-        [ text "Make a blog!"
-        , viewInputField "Title" asText SetTitle
+        [ viewInputField "Title" asText SetTitle
         , viewInputField "Content" asTextArea SetContent
+        , button { buttonModifiers | color = Primary }
+            [ onClick SubmitBlog ]
+            [ text "Submit" ]
         ]
 
 
@@ -86,3 +131,17 @@ viewInputField label asInputType msgC =
         [ BForm.controlLabel [] [ text label ]
         , asInputType [] [ onInput msgC ] []
         ]
+
+
+
+{- SERVER -}
+
+
+baseRequestParams : Context -> BaseRequestParams BlogPost
+baseRequestParams context =
+    BaseRequestParams context blogPostEndpoint blogPostDecoder
+
+
+submitPost : Context -> BlogPost -> RemoteCmd BlogPost
+submitPost context post =
+    createItem (baseRequestParams context) (blogPostEncoder post)
