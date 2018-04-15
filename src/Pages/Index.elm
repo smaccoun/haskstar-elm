@@ -92,3 +92,36 @@ update pageMsg currentPage =
 
                 _ ->
                     ( currentPage, Cmd.none )
+
+
+
+{- CRUD Resource Helpers -}
+
+
+type CrudRoute
+    = Index
+    | Show Int
+    | Edit Int
+    | New
+
+
+type alias BaseParser a =
+    Url.Parser (Route -> a) a
+
+
+makeDefaultResourceRoutes : List String -> (CrudRoute -> Route) -> List (BaseParser Route)
+makeDefaultResourceRoutes urlList crudRoute =
+    let
+        baseUrl =
+            arrayToBaseUrl urlList
+    in
+    [ Url.map (\u -> crudRoute (Show u)) (baseUrl </> Url.int)
+    , Url.map (\u -> crudRoute (Edit u)) (baseUrl </> Url.int </> Url.s "edit")
+    , Url.map (crudRoute Index) baseUrl
+    , Url.map (crudRoute New) (baseUrl </> Url.s "new")
+    ]
+
+
+arrayToBaseUrl : List String -> Url.Parser a a
+arrayToBaseUrl urls =
+    List.foldr ((</>) << Url.s) Url.top urls
