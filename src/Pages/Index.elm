@@ -1,5 +1,6 @@
 module Pages.Index exposing (..)
 
+import Components.BlogPostList as BPL
 import Components.LoginPanel as LoginPanel
 import Navigation exposing (Location)
 import Pages.Admin.Index as Admin exposing (AdminRoute(..))
@@ -12,17 +13,20 @@ type AppPage
     | WelcomeScreen
     | LoginPage LoginPanel.Model
     | AdminPageW Admin.AdminPage
+    | BlogPostList BPL.Model
 
 
 type AppPageMsg
     = LoginPageMsg LoginPanel.Msg
     | AdminPageMsg Admin.AdminPageMsg
+    | BlogPostListMsg BPL.Msg
 
 
 type Route
     = Welcome
     | Login
     | AdminRouteW AdminRoute
+    | BlogPostRoute CrudRoute
 
 
 initializePageFromRoute : Server.Config.Context -> Route -> ( AppPage, Cmd AppPageMsg )
@@ -41,6 +45,13 @@ initializePageFromRoute serverContext route =
             in
             ( AdminPageW adminPage, Cmd.map AdminPageMsg adminPageCmd )
 
+        BlogPostRoute crud ->
+            let
+                ( bpModel, bpCmd ) =
+                    BPL.init serverContext
+            in
+            ( BlogPostList bpModel, Cmd.map BlogPostListMsg bpCmd )
+
 
 locationToPage : Server.Config.Context -> Location -> ( AppPage, Cmd AppPageMsg )
 locationToPage serverContext location =
@@ -49,7 +60,7 @@ locationToPage serverContext location =
         |> Maybe.withDefault ( Error404, Cmd.none )
 
 
-routes : Url.Parser (Route -> a) a
+routes : Url.Parser (Route -> Route) Route
 routes =
     let
         unprotected =
@@ -58,10 +69,14 @@ routes =
             , Url.map (AdminRouteW Admin.AdminHomeRoute) (s "admin" </> s "home")
             ]
 
+        resources =
+            [ makeDefaultResourceRoutes [ "blogPost" ] BlogPostRoute ]
+                |> List.concatMap identity
+
         adminRoutes =
             List.map (Url.map AdminRouteW) Admin.routes
     in
-    Url.oneOf <| List.concatMap identity [ unprotected, adminRoutes ]
+    Url.oneOf <| List.concatMap identity [ unprotected, resources, adminRoutes ]
 
 
 update : AppPageMsg -> AppPage -> ( AppPage, Cmd AppPageMsg )
@@ -89,6 +104,18 @@ update pageMsg currentPage =
                     ( AdminPageW updatedAdminPage
                     , Cmd.map AdminPageMsg adminPageCmd
                     )
+
+                _ ->
+                    ( currentPage, Cmd.none )
+
+        BlogPostListMsg bpMsg ->
+            case currentPage of
+                BlogPostList bplModel ->
+                    let
+                        ( updatedBPLModel, bplCmd ) =
+                            BPL.update bpMsg bplModel
+                    in
+                    ( BlogPostList updatedBPLModel, Cmd.map BlogPostListMsg bplCmd )
 
                 _ ->
                     ( currentPage, Cmd.none )

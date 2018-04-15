@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Bulma.CDN exposing (..)
-import Bulma.Components exposing (navbar, navbarEnd, navbarItemLink, navbarLink, navbarMenu, navbarModifiers)
+import Components.BlogPostList as BlogPostList
 import Components.Navbar exposing (viewNavbar)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Link
@@ -162,6 +162,9 @@ view model =
             AdminPageW adminPage ->
                 AdminIndex.viewAdminPage model.context adminPage
                     |> Html.map (\m -> PageMsgW (AdminPageMsg m))
+
+            BlogPostList bpModel ->
+                BlogPostList.view bpModel
         ]
 
 

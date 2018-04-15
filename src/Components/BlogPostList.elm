@@ -1,4 +1,4 @@
-module BlogPostList exposing (..)
+module Components.BlogPostList exposing (..)
 
 import Html exposing (Html, div, text)
 import RemoteData exposing (RemoteData(..), WebData)
