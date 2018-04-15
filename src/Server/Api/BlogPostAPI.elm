@@ -1,19 +1,30 @@
 module Server.Api.BlogPostAPI exposing (..)
 
-import RemoteData exposing (WebData)
-import Server.Config exposing (apiUrl)
-import Server.RequestUtils exposing (getRequest, postRequest)
-import Types.BlogPost exposing (BlogPost, blogPostDecoder)
+import Server.Config exposing (Context, Endpoint(..), apiUrl)
+import Server.RequestUtils exposing (BaseRequestParams(..), getRequest, postRequest)
+import Server.ResourceAPI exposing (RemoteCmd, createItem, getContainer)
+import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
 
 
-blogPostEndpoint : Server.Config.Endpoint
+blogPostEndpoint : Endpoint
 blogPostEndpoint =
-    "blogPost"
+    Endpoint "blogPost"
 
 
-getBlogPosts : Server.Config.Context -> Cmd (WebData BlogPost)
+
+{- SERVER -}
+
+
+baseRequestParams : Context -> BaseRequestParams BlogPost
+baseRequestParams context =
+    BaseRequestParams context blogPostEndpoint blogPostDecoder
+
+
+submitPost : Context -> BlogPost -> RemoteCmd BlogPost
+submitPost context post =
+    createItem (baseRequestParams context) (blogPostEncoder post)
+
+
+getBlogPosts : Context -> RemoteCmd (List BlogPost)
 getBlogPosts context =
-    getRequest context
-        blogPostEndpoint
-        blogPostDecoder
-        |> RemoteData.sendRequest
+    getContainer (baseRequestParams context)

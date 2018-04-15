@@ -8,10 +8,8 @@ import Html exposing (Html, div, input, label, text)
 import Html.Events exposing (onClick, onInput)
 import Markdown exposing (toHtml)
 import RemoteData exposing (WebData)
-import Server.Api.Index exposing (blogPostEndpoint)
+import Server.Api.BlogPostAPI exposing (submitPost)
 import Server.Config exposing (Context)
-import Server.RequestUtils exposing (BaseRequestParams(..))
-import Server.ResourceAPI exposing (RemoteCmd, createItem)
 import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
 
 
@@ -131,17 +129,3 @@ viewInputField label asInputType msgC =
         [ BForm.controlLabel [] [ text label ]
         , asInputType [] [ onInput msgC ] []
         ]
-
-
-
-{- SERVER -}
-
-
-baseRequestParams : Context -> BaseRequestParams BlogPost
-baseRequestParams context =
-    BaseRequestParams context blogPostEndpoint blogPostDecoder
-
-
-submitPost : Context -> BlogPost -> RemoteCmd BlogPost
-submitPost context post =
-    createItem (baseRequestParams context) (blogPostEncoder post)
