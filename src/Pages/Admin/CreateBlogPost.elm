@@ -5,13 +5,12 @@ import Bulma.Elements exposing (button, buttonModifiers)
 import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlText, controlTextArea, controlTextAreaModifiers, field)
 import Bulma.Modifiers exposing (Color(..))
 import Html exposing (Html, div, input, label, text)
-import Html.Attributes exposing (class)
 import Html.Events exposing (onClick, onInput)
-import Markdown exposing (toHtml)
 import RemoteData exposing (WebData)
 import Server.Api.BlogPostAPI exposing (submitPost)
 import Server.Config exposing (Context)
 import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
+import Views.BlogPost exposing (viewBlogPost)
 
 
 initPost : BlogPost
@@ -78,7 +77,7 @@ view model =
     columns columnsModifiers
         []
         [ column columnModifiers [] [ viewEditSection model ]
-        , column columnModifiers [] [ viewPreviewSection model.post ]
+        , column columnModifiers [] [ viewBlogPost model.post ]
         ]
 
 
@@ -91,21 +90,6 @@ viewEditSection model =
             [ onClick SubmitBlog ]
             [ text "Submit" ]
         ]
-
-
-viewPreviewSection : BlogPost -> Html Msg
-viewPreviewSection { title, content } =
-    let
-        renderTitle =
-            toHtml Nothing <| "# " ++ title
-
-        renderContent =
-            toHtml Nothing content
-
-        fullPost =
-            List.concat [ renderTitle, renderContent ]
-    in
-    div [ class "content" ] fullPost
 
 
 type alias InputType msg =
