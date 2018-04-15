@@ -27,11 +27,19 @@ type alias Model =
 
 type Msg
     = ReceiveBlogPosts (WebData (List BlogPost))
+    | NewUrl String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewUrl destination ->
+            let
+                ( newUrlModel, cMsg ) =
+                    Link.navigate model destination
+            in
+            ( newUrlModel, cMsg )
+
         ReceiveBlogPosts remotePosts ->
             remotePosts ! []
 
@@ -40,11 +48,11 @@ update msg model =
 -- VIEW
 
 
-view : (String -> msg) -> Model -> Html msg
-view newUrlMsg remotePosts =
+view : Model -> Html Msg
+view remotePosts =
     case remotePosts of
         Success posts ->
-            viewBlogPostList posts newUrlMsg
+            viewBlogPostList posts
 
         Loading ->
             div [] [ text "Loading..." ]
@@ -56,18 +64,18 @@ view newUrlMsg remotePosts =
             div [] [ text "..." ]
 
 
-viewBlogPostList : List BlogPost -> (String -> msg) -> Html msg
-viewBlogPostList posts newUrlMsg =
-    div [] (List.map (viewBlogPostListThumb newUrlMsg) posts)
+viewBlogPostList : List BlogPost -> Html Msg
+viewBlogPostList posts =
+    div [] (List.map viewBlogPostListThumb posts)
 
 
-viewBlogPostListThumb : (String -> msg) -> BlogPost -> Html msg
-viewBlogPostListThumb newUrlMsg blogPost =
+viewBlogPostListThumb : BlogPost -> Html Msg
+viewBlogPostListThumb blogPost =
     let
         getUrl =
             "/blogPost/" ++ blogPost.blogPostId
 
         titleLink =
-            a [ Link.link (newUrlMsg getUrl) ] [ text blogPost.title ]
+            a [ Link.link (NewUrl getUrl) ] [ text blogPost.title ]
     in
     centeredLevel [] [ levelItem [] [ titleLink ] ]
