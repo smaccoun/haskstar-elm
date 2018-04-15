@@ -5,6 +5,7 @@ import Bulma.Elements exposing (button, buttonModifiers)
 import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, controlText, controlTextArea, controlTextAreaModifiers, field)
 import Bulma.Modifiers exposing (Color(..))
 import Html exposing (Html, div, input, label, text)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick, onInput)
 import Markdown exposing (toHtml)
 import RemoteData exposing (WebData)
@@ -15,7 +16,8 @@ import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
 
 initPost : BlogPost
 initPost =
-    { title = ""
+    { blogPostId = ""
+    , title = ""
     , content = ""
     }
 
@@ -103,7 +105,7 @@ viewPreviewSection { title, content } =
         fullPost =
             List.concat [ renderTitle, renderContent ]
     in
-    div [] fullPost
+    div [ class "content" ] fullPost
 
 
 type alias InputType msg =

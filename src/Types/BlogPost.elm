@@ -7,7 +7,8 @@ import Json.Encode
 
 
 type alias BlogPost =
-    { title : String
+    { blogPostId : String
+    , title : String
     , content : String
     }
 
@@ -15,6 +16,7 @@ type alias BlogPost =
 blogPostDecoder : Decoder BlogPost
 blogPostDecoder =
     decode BlogPost
+        |> required "blogPostId" string
         |> required "title" string
         |> required "content" string
 

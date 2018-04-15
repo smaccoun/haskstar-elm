@@ -1,6 +1,8 @@
 module Components.BlogPostList exposing (..)
 
-import Html exposing (Html, div, text)
+import Bulma.Layout exposing (centeredLevel, levelItem)
+import Html exposing (Html, a, div, text)
+import Link
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.BlogPostAPI exposing (getBlogPosts)
 import Server.Config exposing (Context)
@@ -38,11 +40,11 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html msg
-view remotePosts =
+view : (String -> msg) -> Model -> Html msg
+view newUrlMsg remotePosts =
     case remotePosts of
         Success posts ->
-            div [] (List.map viewBlogPostListThumb posts)
+            viewBlogPostList posts newUrlMsg
 
         Loading ->
             div [] [ text "Loading..." ]
@@ -54,11 +56,18 @@ view remotePosts =
             div [] [ text "..." ]
 
 
-viewBlogPostList : List BlogPost -> Html msg
-viewBlogPostList posts =
-    div [] (List.map viewBlogPostListThumb posts)
+viewBlogPostList : List BlogPost -> (String -> msg) -> Html msg
+viewBlogPostList posts newUrlMsg =
+    div [] (List.map (viewBlogPostListThumb newUrlMsg) posts)
 
 
-viewBlogPostListThumb : BlogPost -> Html msg
-viewBlogPostListThumb blogPost =
-    div [] [ text blogPost.title ]
+viewBlogPostListThumb : (String -> msg) -> BlogPost -> Html msg
+viewBlogPostListThumb newUrlMsg blogPost =
+    let
+        getUrl =
+            "/blogPost/" ++ blogPost.blogPostId
+
+        titleLink =
+            a [ Link.link (newUrlMsg getUrl) ] [ text blogPost.title ]
+    in
+    centeredLevel [] [ levelItem [] [ titleLink ] ]

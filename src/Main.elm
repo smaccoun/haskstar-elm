@@ -164,7 +164,7 @@ view model =
                     |> Html.map (\m -> PageMsgW (AdminPageMsg m))
 
             BlogPostList bpModel ->
-                BlogPostList.view bpModel
+                BlogPostList.view NewUrl bpModel
         ]
 
 
