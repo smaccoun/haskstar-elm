@@ -25,5 +25,5 @@ viewWelcomeScreen remoteResponse newUrlMsg =
             , div [] [ text <| "Server Response (localhost:8080/) " ++ remoteResponse ]
             , a [ href "http://localhost:8080/swagger-ui", target "_blank" ] [ text "Click here to see all API endpoints (localhost:8080/swagger-ui)" ]
             ]
-        , a [ Link.link (newUrlMsg "login") ] [ text "Go to login page" ]
+        , a [ Link.link (newUrlMsg "/login") ] [ text "Go to login page" ]
         ]
