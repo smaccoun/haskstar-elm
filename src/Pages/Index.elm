@@ -136,8 +136,8 @@ view page =
 
 type CrudRoute
     = Index
-    | Show Int
-    | Edit Int
+    | Show String
+    | Edit String
     | New
 
 
@@ -151,8 +151,8 @@ makeDefaultResourceRoutes urlList crudRoute =
         baseUrl =
             arrayToBaseUrl urlList
     in
-    [ Url.map (\u -> crudRoute (Show u)) (baseUrl </> Url.int)
-    , Url.map (\u -> crudRoute (Edit u)) (baseUrl </> Url.int </> Url.s "edit")
+    [ Url.map (\u -> crudRoute (Show u)) (baseUrl </> Url.string)
+    , Url.map (\u -> crudRoute (Edit u)) (baseUrl </> Url.string </> Url.s "edit")
     , Url.map (crudRoute Index) baseUrl
     , Url.map (crudRoute New) (baseUrl </> Url.s "new")
     ]
