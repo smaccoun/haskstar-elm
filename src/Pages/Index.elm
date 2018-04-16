@@ -1,5 +1,6 @@
 module Pages.Index exposing (..)
 
+import Components.BlogPost as BP
 import Components.BlogPostList as BPL
 import Components.LoginPanel as LoginPanel
 import Html exposing (Html, div, text)
@@ -17,6 +18,7 @@ type AppPage
     | LoginPage LoginPanel.Model
     | AdminPageW Admin.AdminPage
     | BlogPostList BPL.Model
+    | BlogPostView BP.Model
 
 
 type AppPageMsg
@@ -24,6 +26,7 @@ type AppPageMsg
     | LoginPageMsg LoginPanel.Msg
     | AdminPageMsg Admin.AdminPageMsg
     | BlogPostListMsg BPL.Msg
+    | BlogPostViewMsg BP.Msg
 
 
 type Route
@@ -54,11 +57,23 @@ initializePageFromRoute serverContext route =
             ( AdminPageW adminPage, Cmd.map AdminPageMsg adminPageCmd )
 
         BlogPostRoute crud ->
-            let
-                ( bpModel, bpCmd ) =
-                    BPL.init serverContext
-            in
-            ( BlogPostList bpModel, Cmd.map BlogPostListMsg bpCmd )
+            case crud of
+                Index ->
+                    let
+                        ( bpModel, bpCmd ) =
+                            BPL.init serverContext
+                    in
+                    ( BlogPostList bpModel, Cmd.map BlogPostListMsg bpCmd )
+
+                Show id ->
+                    let
+                        ( bpModel, bpCmd ) =
+                            BP.init serverContext id
+                    in
+                    ( BlogPostView bpModel, Cmd.map BlogPostViewMsg bpCmd )
+
+                _ ->
+                    Error404 ! []
 
 
 locationToPage : Server.Config.Context -> Location -> ( AppPage, Cmd AppPageMsg )
@@ -140,6 +155,18 @@ update pageMsg currentPage =
                 _ ->
                     ( currentPage, Cmd.none )
 
+        BlogPostViewMsg bpMsg ->
+            case currentPage of
+                BlogPostView bpModel ->
+                    let
+                        ( updatedBPModel, bpCmd ) =
+                            BP.update bpMsg bpModel
+                    in
+                    ( BlogPostView updatedBPModel, Cmd.map BlogPostViewMsg bpCmd )
+
+                _ ->
+                    ( currentPage, Cmd.none )
+
 
 view : AppPage -> Html AppPageMsg
 view page =
@@ -158,6 +185,9 @@ view page =
 
         BlogPostList m ->
             Html.map BlogPostListMsg <| BPL.view m
+
+        BlogPostView bpm ->
+            Html.map BlogPostViewMsg <| BP.view bpm
 
 
 
