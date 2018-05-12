@@ -1,6 +1,5 @@
 module Types.BlogPost exposing (..)
 
-import Http
 import Json.Decode exposing (Decoder, string)
 import Json.Decode.Pipeline exposing (decode, required)
 import Json.Encode

@@ -1,15 +1,11 @@
 module Main exposing (..)
 
 import Bulma.CDN exposing (..)
-import Components.BlogPostList as BlogPostList
-import Components.Navbar exposing (viewNavbar)
+import Components.Navbar exposing (defaultNavLinks, viewNavbar)
 import Html exposing (Html, a, div, h1, img, main_, text)
 import Link
 import Navigation
-import Pages.Admin.Index as AdminIndex
-import Pages.Index exposing (AppPage(..), AppPageMsg(..), locationToPage)
-import Pages.LoginPage as LoginPage
-import Pages.Welcome exposing (viewWelcomeScreen)
+import Pages.Index exposing (..)
 import Ports exposing (receiveToken, saveToken)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Config as SC
@@ -148,7 +144,7 @@ view : Model -> Html Msg
 view model =
     main_ []
         [ stylesheet
-        , viewNavbar True True model.currentPage NewUrl
+        , viewNavbar True model.currentPage NewUrl defaultNavLinks
         , Html.map PageMsgW <| Pages.Index.view model.currentPage
         ]
 
