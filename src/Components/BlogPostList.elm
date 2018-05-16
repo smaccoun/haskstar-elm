@@ -1,11 +1,17 @@
 module Components.BlogPostList exposing (..)
 
-import Bulma.Layout exposing (centeredLevel, levelItem)
+import Bulma.Columns exposing (..)
+import Bulma.Components exposing (card, cardContent, cardHeader, cardImage, cardTitle)
+import Bulma.Elements exposing (TitleSize(..), title)
+import Bulma.Modifiers exposing (Width(..))
 import Html exposing (Html, a, div, text)
+import Html.Attributes exposing (class, style)
 import Link
+import Markdown exposing (toHtml)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.BlogPostAPI exposing (getBlogPosts)
 import Server.Config exposing (Context)
+import String.Extra
 import Types.BlogPost exposing (BlogPost)
 
 
@@ -66,7 +72,40 @@ view remotePosts =
 
 viewBlogPostList : List BlogPost -> Html Msg
 viewBlogPostList posts =
-    div [] (List.map viewBlogPostListThumb posts)
+    let
+        allThumbsView =
+            column blogPostColumnModifiers
+                []
+                (List.map viewBlogPostListThumb posts)
+    in
+    div []
+        [ title H3 [] [ text "Latest" ]
+        , columns blogPostColumnsModifiers
+            []
+            [ allThumbsView ]
+        ]
+
+
+blogPostColumnsModifiers : ColumnsModifiers
+blogPostColumnsModifiers =
+    { multiline = False
+    , gap = Gap0
+    , display = TabletAndBeyond
+    , centered = True
+    }
+
+
+blogPostColumnModifiers : ColumnModifiers
+blogPostColumnModifiers =
+    { offset = Auto
+    , widths =
+        { mobile = Just Width11
+        , tablet = Just Width8
+        , desktop = Just Width6
+        , widescreen = Just Width6
+        , fullHD = Just Width6
+        }
+    }
 
 
 viewBlogPostListThumb : BlogPost -> Html Msg
@@ -76,6 +115,26 @@ viewBlogPostListThumb blogPost =
             "/blogPost/" ++ blogPost.blogPostId
 
         titleLink =
-            a [ Link.link (NewUrl getUrl) ] [ text blogPost.title ]
+            title H4 [] [ text blogPost.title ]
     in
-    centeredLevel [] [ levelItem [] [ titleLink ] ]
+    a [ Link.link (NewUrl getUrl) ]
+        [ card [ style [ ( "margin-top", "32px" ) ] ]
+            [ cardTitle [ class "has-text-centered" ] [ titleLink ]
+            , cardContent [ class "has-text-left" ]
+                [ contentPreview blogPost.content ]
+            ]
+        ]
+
+
+contentPreview : String -> Html msg
+contentPreview contentMarkdown =
+    let
+        preview =
+            List.concat
+                [ contentMarkdown
+                    |> String.Extra.ellipsis 200
+                    |> toHtml Nothing
+                , [ text "....." ]
+                ]
+    in
+    div [] preview

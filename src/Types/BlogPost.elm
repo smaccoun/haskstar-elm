@@ -15,7 +15,7 @@ type alias BlogPost =
 blogPostDecoder : Decoder BlogPost
 blogPostDecoder =
     decode BlogPost
-        |> required "blogPostId" string
+        |> required "id" string
         |> required "title" string
         |> required "content" string
 
