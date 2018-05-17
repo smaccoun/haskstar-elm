@@ -43,7 +43,7 @@ view : Model -> Html Msg
 view remotePost =
     case remotePost of
         Success post ->
-            viewBlogPost post
+            viewBlogPost { title = post.title, content = post.content }
 
         Loading ->
             div [] [ text "Loading..." ]

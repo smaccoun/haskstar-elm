@@ -12,6 +12,12 @@ type alias BlogPost =
     }
 
 
+type alias BlogPostNew =
+    { title : String
+    , content : String
+    }
+
+
 blogPostDecoder : Decoder BlogPost
 blogPostDecoder =
     decode BlogPost
@@ -20,7 +26,14 @@ blogPostDecoder =
         |> required "content" string
 
 
-blogPostEncoder : BlogPost -> Json.Encode.Value
+blogPostNewDecoder : Decoder BlogPostNew
+blogPostNewDecoder =
+    decode BlogPostNew
+        |> required "title" string
+        |> required "content" string
+
+
+blogPostEncoder : BlogPostNew -> Json.Encode.Value
 blogPostEncoder { title, content } =
     Json.Encode.object
         [ ( "title", Json.Encode.string title )

@@ -3,7 +3,7 @@ module Server.Api.BlogPostAPI exposing (..)
 import Server.Config exposing (Context, Endpoint(..), apiUrl)
 import Server.RequestUtils exposing (BaseRequestParams(..), getRequest, postRequest)
 import Server.ResourceAPI exposing (RemoteCmd, createItem, getContainer, getItem)
-import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
+import Types.BlogPost exposing (BlogPost, BlogPostNew, blogPostDecoder, blogPostEncoder, blogPostNewDecoder)
 
 
 blogPostEndpoint : Endpoint
@@ -20,9 +20,13 @@ baseRequestParams context =
     BaseRequestParams context blogPostEndpoint blogPostDecoder
 
 
-submitPost : Context -> BlogPost -> RemoteCmd BlogPost
+submitPost : Context -> BlogPostNew -> RemoteCmd BlogPostNew
 submitPost context post =
-    createItem (baseRequestParams context) (blogPostEncoder post)
+    let
+        params =
+            BaseRequestParams context blogPostEndpoint blogPostNewDecoder
+    in
+    createItem params (blogPostEncoder post)
 
 
 getBlogPosts : Context -> RemoteCmd (List BlogPost)

@@ -6,17 +6,17 @@ import Bulma.Form as BForm exposing (controlInput, controlInputModifiers, contro
 import Bulma.Modifiers exposing (Color(..))
 import Html exposing (Html, div, input, label, text)
 import Html.Events exposing (onClick, onInput)
+import Link
 import RemoteData exposing (WebData)
 import Server.Api.BlogPostAPI exposing (submitPost)
 import Server.Config exposing (Context)
-import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
+import Types.BlogPost exposing (BlogPost, BlogPostNew, blogPostDecoder, blogPostEncoder)
 import Views.BlogPost exposing (viewBlogPost)
 
 
-initPost : BlogPost
+initPost : BlogPostNew
 initPost =
-    { blogPostId = ""
-    , title = ""
+    { title = ""
     , content = ""
     }
 
@@ -30,14 +30,14 @@ init context =
 
 type alias Model =
     { context : Context
-    , post : BlogPost
+    , post : BlogPostNew
     }
 
 
 type Msg
     = SetTitle String
     | SetContent String
-    | ReceiveSubmittedBlog (WebData BlogPost)
+    | ReceiveSubmittedBlog (WebData BlogPostNew)
     | SubmitBlog
 
 
@@ -69,7 +69,19 @@ update msg model =
                 ! [ Cmd.map ReceiveSubmittedBlog <| submitPost model.context model.post ]
 
         ReceiveSubmittedBlog result ->
-            model ! []
+            case result of
+                RemoteData.Success r ->
+                    let
+                        destination =
+                            "/blogPost"
+                    in
+                    Link.navigate model destination
+
+                RemoteData.Failure e ->
+                    Debug.crash "FAILED TO SUBMIT POST! "
+
+                _ ->
+                    model ! []
 
 
 view : Model -> Html Msg

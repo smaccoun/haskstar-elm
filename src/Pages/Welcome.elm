@@ -50,7 +50,7 @@ viewWelcomeScreen { context, response } =
             [ style [ ( "marginBottom", "12px" ) ] ]
             [ heroBody []
                 [ fluidContainer [ style [ ( "display", "flex" ), ( "justify-content", "center" ) ] ]
-                    [ title H1 [] [ text "Steven MacCoun" ]
+                    [ title H1 [] [ text "My Home Page" ]
                     ]
                 ]
             ]
