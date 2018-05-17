@@ -1,11 +1,12 @@
 module Pages.Welcome exposing (..)
 
-import Bulma.Elements as Elements
+import Bulma.Columns exposing (..)
+import Bulma.Components exposing (card, cardContent, cardImage)
+import Bulma.Elements as Elements exposing (TitleSize(..), title)
 import Bulma.Layout exposing (..)
-import Bulma.Modifiers exposing (Size(..))
-import Html exposing (Html, a, div, text)
-import Html.Attributes exposing (href, style, target)
-import Link
+import Bulma.Modifiers exposing (Size(..), Width(..))
+import Html exposing (Html, a, div, i, text)
+import Html.Attributes exposing (class, href, style, target)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Config as SC
 import Server.RequestUtils exposing (getRequestString)
@@ -45,31 +46,79 @@ viewWelcomeScreen { context, response } =
             context.apiBaseUrl ++ "/swagger-ui"
     in
     div []
-        [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Light }
-            []
+        [ hero { heroModifiers | size = Small, color = Bulma.Modifiers.Primary }
+            [ style [ ( "marginBottom", "12px" ) ] ]
             [ heroBody []
                 [ fluidContainer [ style [ ( "display", "flex" ), ( "justify-content", "center" ) ] ]
-                    [ Elements.easyImage Elements.Natural [ style [ ( "width", "300px" ) ] ] "/haskstarLogo.png"
+                    [ title H1 [] [ text "Steven MacCoun" ]
                     ]
                 ]
             ]
-        , section NotSpaced
+        , viewAllInfoCards
+        ]
+
+
+viewAllInfoCards : Html msg
+viewAllInfoCards =
+    div [ class "content" ]
+        [ columns infoColumnsModifiers
             []
-            [ Elements.title Elements.H2 [] [ text "Server Connection" ]
-            , div []
-                [ case response of
-                    Success r ->
-                        text <| "Server Response " ++ context.apiBaseUrl ++ "  " ++ r
-
-                    NotAsked ->
-                        div [] [ text "Have not yet contacted server" ]
-
-                    Loading ->
-                        div [] [ text "Loading..." ]
-
-                    Failure e ->
-                        div [] [ text <| "Error loading from server" ++ toString e ]
-                ]
-            , a [ href swaggerEndpoint, target "_blank" ] [ text <| "Click here to see all API endpoints " ++ swaggerEndpoint ]
+            [ column infoColumnModifiers [] [ viewInfoCard blogIcon ]
             ]
+        ]
+
+
+infoColumnsModifiers : ColumnsModifiers
+infoColumnsModifiers =
+    { multiline = False
+    , gap = Gap2
+    , display = TabletAndBeyond
+    , centered = True
+    }
+
+
+infoColumnModifiers : ColumnModifiers
+infoColumnModifiers =
+    { offset = Auto
+    , widths =
+        { mobile = Just Width11
+        , tablet = Just Width8
+        , desktop = Just Width2
+        , widescreen = Just Width2
+        , fullHD = Just Width2
+        }
+    }
+
+
+type alias IconConfig =
+    { faIcon : String
+    , title : String
+    , iconSize : String
+    , iconLink : String
+    }
+
+
+blogIcon : IconConfig
+blogIcon =
+    { faIcon = "fab fa-blogger"
+    , title = "Blog"
+    , iconSize = "120px"
+    , iconLink = "/blogPost"
+    }
+
+
+viewInfoCard : IconConfig -> Html msg
+viewInfoCard iconConfig =
+    a [ href iconConfig.iconLink ]
+        [ card []
+            [ cardImage [] [ viewInfoLink iconConfig ]
+            , cardContent [] [ text iconConfig.title ]
+            ]
+        ]
+
+
+viewInfoLink : IconConfig -> Html msg
+viewInfoLink { faIcon, iconSize, iconLink } =
+    a [ href iconLink ]
+        [ i [ class faIcon, style [ ( "fontSize", iconSize ) ] ] []
         ]
