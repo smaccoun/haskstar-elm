@@ -4,7 +4,7 @@ import Html exposing (Html)
 import Pages.Admin.CreateBlogPost as CreateBlogPost
 import Pages.Admin.Home as Home
 import Server.Config
-import UrlParser as Url exposing ((</>), (<?>), s, top)
+import UrlParser as Url exposing ((</>), (<?>), s, string, top)
 
 
 type AdminPage
@@ -15,6 +15,7 @@ type AdminPage
 type AdminRoute
     = AdminHomeRoute
     | CreateBlogPostRoute
+    | EditBlogPostRoute String
 
 
 type AdminPageMsg
@@ -33,7 +34,18 @@ initializePageFromRoute serverContext route =
             ( AdminHome initialPage, Cmd.map HomeMsg initialCmd )
 
         CreateBlogPostRoute ->
-            CreateBlogPost (CreateBlogPost.init serverContext) ! []
+            let
+                ( m, cmd ) =
+                    CreateBlogPost.init serverContext Nothing
+            in
+            CreateBlogPost m ! [ Cmd.map CreateBlogPostMsg cmd ]
+
+        EditBlogPostRoute id ->
+            let
+                ( m, cmd ) =
+                    CreateBlogPost.init serverContext (Just id)
+            in
+            CreateBlogPost m ! [ Cmd.map CreateBlogPostMsg cmd ]
 
 
 update : AdminPage -> AdminPageMsg -> ( AdminPage, Cmd AdminPageMsg )
@@ -78,4 +90,5 @@ routes : List (Url.Parser (AdminRoute -> a) a)
 routes =
     [ Url.map AdminHomeRoute (s "admin" </> s "home")
     , Url.map CreateBlogPostRoute (s "admin" </> s "blogPost" </> s "new")
+    , Url.map (\id -> EditBlogPostRoute id) (s "admin" </> s "blogPost" </> string </> s "edit")
     ]
