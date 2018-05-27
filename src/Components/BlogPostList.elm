@@ -13,6 +13,7 @@ import Server.Api.BlogPostAPI exposing (getBlogPosts)
 import Server.Config exposing (Context)
 import String.Extra
 import Types.BlogPost exposing (BlogPost)
+import Types.Pagination exposing (PaginatedResult)
 
 
 -- MODEL
@@ -24,7 +25,7 @@ init context =
 
 
 type alias Model =
-    WebData (List BlogPost)
+    WebData (PaginatedResult BlogPost)
 
 
 
@@ -32,7 +33,7 @@ type alias Model =
 
 
 type Msg
-    = ReceiveBlogPosts (WebData (List BlogPost))
+    = ReceiveBlogPosts (WebData (PaginatedResult BlogPost))
     | NewUrl String
 
 
@@ -58,7 +59,7 @@ view : Model -> Html Msg
 view remotePosts =
     case remotePosts of
         Success posts ->
-            viewBlogPostList posts
+            viewBlogPostList posts.data
 
         Loading ->
             div [] [ text "Loading..." ]

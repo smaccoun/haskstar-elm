@@ -4,6 +4,7 @@ import Server.Config exposing (Context, Endpoint(..), apiUrl)
 import Server.RequestUtils exposing (BaseRequestParams(..), getRequest, postRequest)
 import Server.ResourceAPI exposing (RemoteCmd, createItem, getContainer, getItem, updateItem)
 import Types.BlogPost exposing (BlogPost, BlogPostNew, blogPostDecoder, blogPostEncoder, blogPostNewDecoder)
+import Types.Pagination exposing (PaginatedResult)
 
 
 blogPostEndpoint : Endpoint
@@ -38,7 +39,7 @@ editPost context post uuid =
     updateItem params (blogPostEncoder post) uuid
 
 
-getBlogPosts : Context -> RemoteCmd (List BlogPost)
+getBlogPosts : Context -> RemoteCmd (PaginatedResult BlogPost)
 getBlogPosts context =
     getContainer (baseRequestParams context)
 
