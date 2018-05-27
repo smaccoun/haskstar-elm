@@ -1,22 +1,22 @@
 module Server.ResourceAPI exposing (..)
 
 import Http exposing (jsonBody)
-import Json.Decode exposing (list)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
 import Server.Config exposing (Endpoint(..))
 import Server.RequestUtils exposing (BaseRequestParams(..), getRequest, postRequest)
+import Types.Pagination exposing (PaginatedResult, paginatedResultDecoder)
 
 
 type alias RemoteCmd a =
     Cmd (WebData a)
 
 
-getContainer : BaseRequestParams a -> RemoteCmd (List a)
+getContainer : BaseRequestParams a -> RemoteCmd (PaginatedResult a)
 getContainer (BaseRequestParams context endpoint decoder) =
     getRequest context
         endpoint
-        (list decoder)
+        (paginatedResultDecoder decoder)
         |> RemoteData.sendRequest
 
 

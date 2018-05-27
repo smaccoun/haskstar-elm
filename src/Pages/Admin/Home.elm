@@ -7,6 +7,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.Index exposing (userApiResourceParams)
 import Server.Config
 import Server.ResourceAPI exposing (getContainer)
+import Types.Pagination exposing (PaginatedResult)
 import Types.User exposing (User)
 
 
@@ -18,11 +19,11 @@ init context =
 
 
 type alias Model =
-    { users : WebData (List User) }
+    { users : WebData (PaginatedResult User) }
 
 
 type Msg
-    = GetUsers (WebData (List User))
+    = GetUsers (WebData (PaginatedResult User))
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -60,11 +61,11 @@ viewMenu =
         ]
 
 
-viewRemoteUsers : WebData (List User) -> Html msg
+viewRemoteUsers : WebData (PaginatedResult User) -> Html msg
 viewRemoteUsers remoteUsers =
     case remoteUsers of
         Success users ->
-            div [] [ viewUsers users ]
+            div [] [ viewUsers users.data ]
 
         _ ->
             div [] [ text "..." ]
