@@ -205,7 +205,7 @@ view model =
                                 { title = baseEntity.title, content = baseEntity.content }
                 in
                 [ column columnModifiers [] [ viewEditSection post ]
-                , column columnModifiers [] [ viewBlogPost post ]
+                , column columnModifiers [] [ viewBlogPost Nothing post ]
                 ]
 
             Submitting ->

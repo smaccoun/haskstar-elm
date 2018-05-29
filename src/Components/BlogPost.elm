@@ -1,6 +1,7 @@
 module Components.BlogPost exposing (..)
 
 import Html exposing (Html, a, div, text)
+import Html.Attributes exposing (style)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.BlogPostAPI exposing (getBlogPost)
 import Server.Config exposing (Context)
@@ -43,7 +44,9 @@ view : Model -> Html Msg
 view remotePost =
     case remotePost of
         Success post ->
-            viewBlogPost post.baseEntity
+            div [ style [ ( "padding", "24px" ) ] ]
+                [ viewBlogPost (Just post.meta.updatedAt) post.baseEntity
+                ]
 
         Loading ->
             div [] [ text "Loading..." ]

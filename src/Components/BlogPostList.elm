@@ -75,15 +75,17 @@ viewBlogPostEList : List BlogPostE -> Html Msg
 viewBlogPostEList posts =
     let
         allThumbsView =
-            column blogPostColumnModifiers
-                []
-                (List.map viewBlogPostEListThumb posts)
+            List.map viewBlogPostEListThumb posts
     in
-    div []
-        [ title H3 [] [ text "Latest" ]
-        , columns blogPostColumnsModifiers
+    div [ style [ ( "padding", "32px" ) ] ]
+        [ columns blogPostColumnsModifiers
             []
-            [ allThumbsView ]
+            [ column blogPostColumnModifiers
+                []
+                [ title H3 [ class "has-text-left" ] [ text "Latest" ]
+                , div [] allThumbsView
+                ]
+            ]
         ]
 
 
