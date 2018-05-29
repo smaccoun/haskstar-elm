@@ -1,11 +1,12 @@
 module Server.ResourceAPI exposing (..)
 
 import Http exposing (jsonBody)
-import Json.Decode exposing (string)
+import Json.Decode exposing (list, string)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
 import Server.Config exposing (Context, Endpoint(..))
 import Server.RequestUtils exposing (BaseRequestParams, getRequest, patchRequest, postRequest)
+import Types.MasterEntity exposing (MasterEntity, entityDecoder)
 import Types.Pagination exposing (PaginatedResult, paginatedResultDecoder)
 
 
@@ -29,19 +30,19 @@ getItem { context, endpoint, decoder } uuid =
         |> RemoteData.sendRequest
 
 
-createItem : BaseRequestParams a -> Value -> RemoteCmd a
+createItem : BaseRequestParams a -> Value -> RemoteCmd (MasterEntity a)
 createItem { context, endpoint, decoder } encodedValue =
     postRequest context
         (Endpoint endpoint)
         (jsonBody encodedValue)
-        decoder
+        (entityDecoder decoder)
         |> RemoteData.sendRequest
 
 
-updateItem : Context -> Endpoint -> Value -> String -> RemoteCmd String
+updateItem : Context -> Endpoint -> Value -> String -> RemoteCmd (List String)
 updateItem context (Endpoint endpoint) encodedValue uuid =
     patchRequest context
         (Endpoint <| endpoint ++ "/" ++ uuid)
         (jsonBody encodedValue)
-        string
+        (list string)
         |> RemoteData.sendRequest
