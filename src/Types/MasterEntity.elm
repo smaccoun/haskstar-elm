@@ -7,17 +7,28 @@ import Json.Decode.Pipeline exposing (decode, required)
 
 
 type alias MasterEntity subEntity =
-    { id : String
+    { meta : Meta
     , subEntity : subEntity
-    , updatedAt : Date
-    , createdAt : Date
     }
+
+
+type alias Meta =
+    { id : String
+    , updatedAt : String
+    , createdAt : String
+    }
+
+
+metaDecoder : Decoder subEntity -> Decoder (MasterEntity subEntity)
+metaDecoder subDecoder =
+    decode MasterEntity
+        |> required "id" string
+        |> required "updatedAt" date
+        |> required "createdAt" date
 
 
 entityDecoder : Decoder subEntity -> Decoder (MasterEntity subEntity)
 entityDecoder subDecoder =
     decode MasterEntity
-        |> required "appId"
+        |> required "meta" metaDecoder
         |> required "baseEntity" subDecoder
-        |> required "updatedAt" date
-        |> required "createdAt" date
