@@ -40,7 +40,7 @@ createItem (BaseRequestParams context endpoint decoder) encodedValue =
 updateItem : BaseRequestParams a -> Value -> String -> RemoteCmd a
 updateItem (BaseRequestParams context (Endpoint endpoint) decoder) encodedValue uuid =
     postRequest context
-        (Endpoint <| endpoint ++ "/update/" ++ uuid)
+        (Endpoint <| endpoint ++ "/" ++ uuid)
         (jsonBody encodedValue)
         decoder
         |> RemoteData.sendRequest
