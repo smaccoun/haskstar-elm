@@ -6,14 +6,14 @@ import Json.Decode.Extra exposing (date)
 import Json.Decode.Pipeline exposing (decode, required)
 
 
-type alias MasterEntity subEntity =
+type alias MasterEntity baseEntity =
     { meta : Meta
-    , subEntity : subEntity
+    , baseEntity : baseEntity
     }
 
 
 type alias Meta =
-    { id : String
+    { appId : String
     , updatedAt : Date
     , createdAt : Date
     }

@@ -110,19 +110,19 @@ blogPostColumnModifiers =
 
 
 viewBlogPostEListThumb : BlogPostE -> Html Msg
-viewBlogPostEListThumb { appId, subEntity, updatedAt } =
+viewBlogPostEListThumb { meta, baseEntity } =
     let
         getUrl =
-            "/blogPost/" ++ appId
+            "/blogPost/" ++ meta.appId
 
         titleLink =
-            title H4 [] [ text subEntity.title ]
+            title H4 [] [ text baseEntity.title ]
     in
     a [ Link.link (NewUrl getUrl) ]
         [ card [ style [ ( "margin-top", "32px" ) ] ]
             [ cardTitle [ class "has-text-centered" ] [ titleLink ]
             , cardContent [ class "has-text-left" ]
-                [ contentPreview subEntity.content ]
+                [ contentPreview baseEntity.content ]
             ]
         ]
 

@@ -43,7 +43,7 @@ view : Model -> Html Msg
 view remotePost =
     case remotePost of
         Success post ->
-            viewBlogPost post.subEntity
+            viewBlogPost post.baseEntity
 
         Loading ->
             div [] [ text "Loading..." ]

@@ -81,12 +81,12 @@ update msg model =
                                 Existing bp ->
                                     let
                                         oldSub =
-                                            bp.subEntity
+                                            bp.baseEntity
 
                                         newSub =
                                             { oldSub | title = title }
                                     in
-                                    Existing { bp | subEntity = newSub }
+                                    Existing { bp | baseEntity = newSub }
                     in
                     { model | viewState = Editing post } ! []
 
@@ -105,12 +105,12 @@ update msg model =
                                 Existing bp ->
                                     let
                                         oldSub =
-                                            bp.subEntity
+                                            bp.baseEntity
 
                                         newSub =
                                             { oldSub | content = content }
                                     in
-                                    Existing { bp | subEntity = newSub }
+                                    Existing { bp | baseEntity = newSub }
                     in
                     { model | viewState = Editing post } ! []
 
@@ -125,10 +125,13 @@ update msg model =
                                 New bpNew ->
                                     Cmd.map ReceiveSubmittedBlog <| submitPost model.context bpNew
 
-                                Existing { updatedAt, subEntity, appId } ->
+                                Existing { meta, baseEntity } ->
                                     let
+                                        { updatedAt, appId, createdAt } =
+                                            meta
+
                                         { title, content } =
-                                            subEntity
+                                            baseEntity
 
                                         ( uuid, bpBase ) =
                                             ( appId, { title = title, content = content } )
@@ -181,8 +184,8 @@ view model =
                             New bpNew ->
                                 bpNew
 
-                            Existing { subEntity } ->
-                                { title = subEntity.title, content = subEntity.content }
+                            Existing { baseEntity } ->
+                                { title = baseEntity.title, content = baseEntity.content }
                 in
                 [ column columnModifiers [] [ viewEditSection post ]
                 , column columnModifiers [] [ viewBlogPost post ]
