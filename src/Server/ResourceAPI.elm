@@ -1,7 +1,7 @@
 module Server.ResourceAPI exposing (..)
 
 import Http exposing (jsonBody)
-import Json.Decode exposing (string)
+import Json.Decode exposing (list, string)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
 import Server.Config exposing (Context, Endpoint(..))
@@ -38,10 +38,10 @@ createItem { context, endpoint, decoder } encodedValue =
         |> RemoteData.sendRequest
 
 
-updateItem : Context -> Endpoint -> Value -> String -> RemoteCmd String
+updateItem : Context -> Endpoint -> Value -> String -> RemoteCmd (List String)
 updateItem context (Endpoint endpoint) encodedValue uuid =
     patchRequest context
         (Endpoint <| endpoint ++ "/" ++ uuid)
         (jsonBody encodedValue)
-        string
+        (list string)
         |> RemoteData.sendRequest

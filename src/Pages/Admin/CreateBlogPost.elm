@@ -63,7 +63,7 @@ type Msg
     | SetContent String
     | ReceiveBlog (WebData BlogPostE)
     | ReceiveSubmittedBlog (WebData BlogPost)
-    | ReceiveEditedBlog (WebData String)
+    | ReceiveEditedBlog (WebData (List String))
     | SubmitBlog
 
 
