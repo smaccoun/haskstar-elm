@@ -4,8 +4,8 @@ import Http exposing (jsonBody)
 import Json.Decode exposing (string)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
-import Server.Config exposing (Endpoint(..))
-import Server.RequestUtils exposing (BaseRequestParams(..), getRequest, postRequest)
+import Server.Config exposing (Context, Endpoint(..))
+import Server.RequestUtils exposing (BaseRequestParams, getRequest, patchRequest, postRequest)
 import Types.Pagination exposing (PaginatedResult, paginatedResultDecoder)
 
 
@@ -14,15 +14,15 @@ type alias RemoteCmd a =
 
 
 getContainer : BaseRequestParams a -> RemoteCmd (PaginatedResult a)
-getContainer (BaseRequestParams context endpoint decoder) =
+getContainer { context, endpoint, decoder } =
     getRequest context
-        endpoint
+        (Endpoint endpoint)
         (paginatedResultDecoder decoder)
         |> RemoteData.sendRequest
 
 
 getItem : BaseRequestParams a -> String -> RemoteCmd a
-getItem (BaseRequestParams context (Endpoint endpoint) decoder) uuid =
+getItem { context, endpoint, decoder } uuid =
     getRequest context
         (Endpoint <| endpoint ++ "/" ++ uuid)
         decoder
@@ -30,17 +30,17 @@ getItem (BaseRequestParams context (Endpoint endpoint) decoder) uuid =
 
 
 createItem : BaseRequestParams a -> Value -> RemoteCmd a
-createItem (BaseRequestParams context endpoint decoder) encodedValue =
+createItem { context, endpoint, decoder } encodedValue =
     postRequest context
-        endpoint
+        (Endpoint endpoint)
         (jsonBody encodedValue)
         decoder
         |> RemoteData.sendRequest
 
 
-updateItem : BaseRequestParams a -> Value -> String -> RemoteCmd String
-updateItem (BaseRequestParams context (Endpoint endpoint) decoder) encodedValue uuid =
-    postRequest context
+updateItem : Context -> Endpoint -> Value -> String -> RemoteCmd String
+updateItem context (Endpoint endpoint) encodedValue uuid =
+    patchRequest context
         (Endpoint <| endpoint ++ "/" ++ uuid)
         (jsonBody encodedValue)
         string
