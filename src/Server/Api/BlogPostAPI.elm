@@ -26,7 +26,7 @@ submitPost context post =
     createItem (baseRequestParams context blogPostDecoder) (blogPostEncoder post)
 
 
-editPost : Context -> BlogPost -> String -> RemoteCmd BlogPost
+editPost : Context -> BlogPost -> String -> RemoteCmd String
 editPost context post uuid =
     updateItem (baseRequestParams context blogPostDecoder) (blogPostEncoder post) uuid
 

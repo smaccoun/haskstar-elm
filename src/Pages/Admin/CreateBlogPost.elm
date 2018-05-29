@@ -63,6 +63,7 @@ type Msg
     | SetContent String
     | ReceiveBlog (WebData BlogPostE)
     | ReceiveSubmittedBlog (WebData BlogPost)
+    | ReceiveEditedBlog (WebData String)
     | SubmitBlog
 
 
@@ -136,7 +137,7 @@ update msg model =
                                         ( uuid, bpBase ) =
                                             ( appId, { title = title, content = content } )
                                     in
-                                    Cmd.map ReceiveSubmittedBlog <| editPost model.context bpBase uuid
+                                    Cmd.map ReceiveEditedBlog <| editPost model.context bpBase uuid
 
                         _ ->
                             Debug.crash "Impossible state"
@@ -154,6 +155,21 @@ update msg model =
                     { model | viewState = Initializing result } ! []
 
         ReceiveSubmittedBlog result ->
+            case result of
+                RemoteData.Success r ->
+                    let
+                        destination =
+                            "/blogPost"
+                    in
+                    Link.navigate model destination
+
+                RemoteData.Failure e ->
+                    Debug.crash "FAILED TO SUBMIT POST! "
+
+                _ ->
+                    model ! []
+
+        ReceiveEditedBlog result ->
             case result of
                 RemoteData.Success r ->
                     let
