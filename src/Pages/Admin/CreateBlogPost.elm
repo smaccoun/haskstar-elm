@@ -11,6 +11,7 @@ import RemoteData exposing (WebData)
 import Server.Api.BlogPostAPI exposing (editPost, getBlogPost, submitPost)
 import Server.Config exposing (Context)
 import Types.BlogPost exposing (BlogPost, BlogPostE, blogPostDecoder, blogPostEncoder)
+import Types.MasterEntity exposing (MasterEntity)
 import Views.BlogPost exposing (viewBlogPost)
 
 
@@ -62,7 +63,7 @@ type Msg
     = SetTitle String
     | SetContent String
     | ReceiveBlog (WebData BlogPostE)
-    | ReceiveSubmittedBlog (WebData BlogPost)
+    | ReceiveSubmittedBlog (WebData (MasterEntity BlogPost))
     | ReceiveEditedBlog (WebData (List String))
     | SubmitBlog
 

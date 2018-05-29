@@ -22,7 +22,7 @@ baseRequestParams context =
     BaseRequestParams context "blogPost"
 
 
-submitPost : Context -> BlogPost -> RemoteCmd BlogPost
+submitPost : Context -> BlogPost -> RemoteCmd (MasterEntity BlogPost)
 submitPost context post =
     createItem (baseRequestParams context blogPostDecoder) (blogPostEncoder post)
 
