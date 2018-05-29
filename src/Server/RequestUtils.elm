@@ -5,8 +5,11 @@ import Json.Decode as Json
 import Server.Config as S exposing (Endpoint(..))
 
 
-type BaseRequestParams a
-    = BaseRequestParams S.Context S.Endpoint (Json.Decoder a)
+type alias BaseRequestParams a =
+    { context : S.Context
+    , endpoint : String
+    , decoder : Json.Decoder a
+    }
 
 
 request : S.Context -> String -> String -> Http.Body -> Http.Expect a -> Http.Request a
@@ -38,8 +41,8 @@ postRequest context (Endpoint endpoint) body decoder =
     request context "POST" endpoint body (Http.expectJson decoder)
 
 
-patchRequest : S.Context -> String -> Http.Body -> Json.Decoder a -> Http.Request a
-patchRequest context url body decoder =
+patchRequest : S.Context -> Endpoint -> Http.Body -> Json.Decoder a -> Http.Request a
+patchRequest context (Endpoint url) body decoder =
     request context "PATCH" url body (Http.expectJson decoder)
 
 
