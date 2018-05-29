@@ -5,10 +5,10 @@ import Bulma.Modifiers exposing (Width(..))
 import Html exposing (Html, div, input, label, text)
 import Html.Attributes exposing (class, style)
 import Markdown exposing (toHtml)
-import Types.BlogPost exposing (BlogPost, BlogPostNew, blogPostDecoder, blogPostEncoder)
+import Types.BlogPost exposing (BlogPost, blogPostDecoder, blogPostEncoder)
 
 
-viewBlogPost : BlogPostNew -> Html msg
+viewBlogPost : BlogPost -> Html msg
 viewBlogPost { title, content } =
     let
         fullPost =

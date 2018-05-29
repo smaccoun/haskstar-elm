@@ -12,7 +12,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.BlogPostAPI exposing (getBlogPosts)
 import Server.Config exposing (Context)
 import String.Extra
-import Types.BlogPost exposing (BlogPost)
+import Types.BlogPost exposing (BlogPostE)
 import Types.Pagination exposing (PaginatedResult)
 
 
@@ -21,11 +21,11 @@ import Types.Pagination exposing (PaginatedResult)
 
 init : Context -> ( Model, Cmd Msg )
 init context =
-    ( NotAsked, Cmd.map ReceiveBlogPosts (getBlogPosts context) )
+    ( NotAsked, Cmd.map ReceiveBlogPostEs (getBlogPosts context) )
 
 
 type alias Model =
-    WebData (PaginatedResult BlogPost)
+    WebData (PaginatedResult BlogPostE)
 
 
 
@@ -33,7 +33,7 @@ type alias Model =
 
 
 type Msg
-    = ReceiveBlogPosts (WebData (PaginatedResult BlogPost))
+    = ReceiveBlogPostEs (WebData (PaginatedResult BlogPostE))
     | NewUrl String
 
 
@@ -47,7 +47,7 @@ update msg model =
             in
             ( newUrlModel, cMsg )
 
-        ReceiveBlogPosts remotePosts ->
+        ReceiveBlogPostEs remotePosts ->
             remotePosts ! []
 
 
@@ -59,7 +59,7 @@ view : Model -> Html Msg
 view remotePosts =
     case remotePosts of
         Success posts ->
-            viewBlogPostList posts.data
+            viewBlogPostEList posts.data
 
         Loading ->
             div [] [ text "Loading..." ]
@@ -71,13 +71,13 @@ view remotePosts =
             div [] [ text "..." ]
 
 
-viewBlogPostList : List BlogPost -> Html Msg
-viewBlogPostList posts =
+viewBlogPostEList : List BlogPostE -> Html Msg
+viewBlogPostEList posts =
     let
         allThumbsView =
             column blogPostColumnModifiers
                 []
-                (List.map viewBlogPostListThumb posts)
+                (List.map viewBlogPostEListThumb posts)
     in
     div []
         [ title H3 [] [ text "Latest" ]
@@ -109,20 +109,20 @@ blogPostColumnModifiers =
     }
 
 
-viewBlogPostListThumb : BlogPost -> Html Msg
-viewBlogPostListThumb blogPost =
+viewBlogPostEListThumb : BlogPostE -> Html Msg
+viewBlogPostEListThumb { appId, subEntity, updatedAt } =
     let
         getUrl =
-            "/blogPost/" ++ blogPost.blogPostId
+            "/blogPost/" ++ appId
 
         titleLink =
-            title H4 [] [ text blogPost.title ]
+            title H4 [] [ text subEntity.title ]
     in
     a [ Link.link (NewUrl getUrl) ]
         [ card [ style [ ( "margin-top", "32px" ) ] ]
             [ cardTitle [ class "has-text-centered" ] [ titleLink ]
             , cardContent [ class "has-text-left" ]
-                [ contentPreview blogPost.content ]
+                [ contentPreview subEntity.content ]
             ]
         ]
 

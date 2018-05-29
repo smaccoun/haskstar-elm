@@ -1,13 +1,13 @@
 module Types.MasterEntity exposing (..)
 
-import Data.Extra exposing (date)
 import Date exposing (Date)
 import Json.Decode exposing (Decoder, int, list, nullable, string)
+import Json.Decode.Extra exposing (date)
 import Json.Decode.Pipeline exposing (decode, required)
 
 
 type alias MasterEntity subEntity =
-    { id : String
+    { appId : String
     , subEntity : subEntity
     , updatedAt : Date
     , createdAt : Date
@@ -17,7 +17,7 @@ type alias MasterEntity subEntity =
 entityDecoder : Decoder subEntity -> Decoder (MasterEntity subEntity)
 entityDecoder subDecoder =
     decode MasterEntity
-        |> required "appId"
+        |> required "appId" string
         |> required "baseEntity" subDecoder
         |> required "updatedAt" date
         |> required "createdAt" date

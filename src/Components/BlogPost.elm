@@ -4,7 +4,7 @@ import Html exposing (Html, a, div, text)
 import RemoteData exposing (RemoteData(..), WebData)
 import Server.Api.BlogPostAPI exposing (getBlogPost)
 import Server.Config exposing (Context)
-import Types.BlogPost exposing (BlogPost)
+import Types.BlogPost exposing (BlogPost, BlogPostE)
 import Views.BlogPost exposing (viewBlogPost)
 
 
@@ -17,7 +17,7 @@ init context uuid =
 
 
 type alias Model =
-    WebData BlogPost
+    WebData BlogPostE
 
 
 
@@ -25,7 +25,7 @@ type alias Model =
 
 
 type Msg
-    = ReceiveBlogPost (WebData BlogPost)
+    = ReceiveBlogPost (WebData BlogPostE)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -43,7 +43,7 @@ view : Model -> Html Msg
 view remotePost =
     case remotePost of
         Success post ->
-            viewBlogPost { title = post.title, content = post.content }
+            viewBlogPost post.subEntity
 
         Loading ->
             div [] [ text "Loading..." ]

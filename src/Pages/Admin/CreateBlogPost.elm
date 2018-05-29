@@ -10,11 +10,11 @@ import Link
 import RemoteData exposing (WebData)
 import Server.Api.BlogPostAPI exposing (editPost, getBlogPost, submitPost)
 import Server.Config exposing (Context)
-import Types.BlogPost exposing (BlogPost, BlogPostNew, blogPostDecoder, blogPostEncoder)
+import Types.BlogPost exposing (BlogPost, BlogPostE, blogPostDecoder, blogPostEncoder)
 import Views.BlogPost exposing (viewBlogPost)
 
 
-initNewPost : BlogPostNew
+initNewPost : BlogPost
 initNewPost =
     { title = ""
     , content = ""
@@ -22,14 +22,14 @@ initNewPost =
 
 
 type ViewState
-    = Initializing (WebData BlogPost)
+    = Initializing (WebData BlogPostE)
     | Editing Blog
     | Submitting
 
 
 type Blog
-    = New BlogPostNew
-    | Existing BlogPost
+    = New BlogPost
+    | Existing BlogPostE
 
 
 type alias Model =
@@ -61,8 +61,8 @@ init context mbId =
 type Msg
     = SetTitle String
     | SetContent String
-    | ReceiveBlog (WebData BlogPost)
-    | ReceiveSubmittedBlog (WebData BlogPostNew)
+    | ReceiveBlog (WebData BlogPostE)
+    | ReceiveSubmittedBlog (WebData BlogPost)
     | SubmitBlog
 
 
@@ -79,7 +79,14 @@ update msg model =
                                     New { bp | title = title }
 
                                 Existing bp ->
-                                    Existing { bp | title = title }
+                                    let
+                                        oldSub =
+                                            bp.subEntity
+
+                                        newSub =
+                                            { oldSub | title = title }
+                                    in
+                                    Existing { bp | subEntity = newSub }
                     in
                     { model | viewState = Editing post } ! []
 
@@ -96,7 +103,14 @@ update msg model =
                                     New { bp | content = content }
 
                                 Existing bp ->
-                                    Existing { bp | content = content }
+                                    let
+                                        oldSub =
+                                            bp.subEntity
+
+                                        newSub =
+                                            { oldSub | content = content }
+                                    in
+                                    Existing { bp | subEntity = newSub }
                     in
                     { model | viewState = Editing post } ! []
 
@@ -111,10 +125,13 @@ update msg model =
                                 New bpNew ->
                                     Cmd.map ReceiveSubmittedBlog <| submitPost model.context bpNew
 
-                                Existing { blogPostId, title, content } ->
+                                Existing { updatedAt, subEntity, appId } ->
                                     let
+                                        { title, content } =
+                                            subEntity
+
                                         ( uuid, bpBase ) =
-                                            ( blogPostId, { title = title, content = content } )
+                                            ( appId, { title = title, content = content } )
                                     in
                                     Cmd.map ReceiveSubmittedBlog <| editPost model.context bpBase uuid
 
@@ -164,8 +181,8 @@ view model =
                             New bpNew ->
                                 bpNew
 
-                            Existing bp ->
-                                { title = bp.title, content = bp.content }
+                            Existing { subEntity } ->
+                                { title = subEntity.title, content = subEntity.content }
                 in
                 [ column columnModifiers [] [ viewEditSection post ]
                 , column columnModifiers [] [ viewBlogPost post ]
@@ -176,7 +193,7 @@ view model =
         )
 
 
-viewEditSection : BlogPostNew -> Html Msg
+viewEditSection : BlogPost -> Html Msg
 viewEditSection { title, content } =
     div []
         [ viewInputField "Title" title asText SetTitle
