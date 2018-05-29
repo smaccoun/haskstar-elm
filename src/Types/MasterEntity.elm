@@ -32,3 +32,19 @@ entityDecoder subDecoder =
     decode MasterEntity
         |> required "meta" metaDecoder
         |> required "baseEntity" subDecoder
+
+
+
+{- LENSES -}
+
+
+setBaseEntity : MasterEntity baseEntity -> (a -> baseEntity) -> a -> MasterEntity baseEntity
+setBaseEntity curMaster accessor newVal =
+    let
+        curBase =
+            curMaster.baseEntity
+
+        newBase =
+            { curBase | accessor = newVal }
+    in
+    { curBase | baseEntity = newBase }
