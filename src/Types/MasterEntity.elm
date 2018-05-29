@@ -1,27 +1,27 @@
 module Types.MasterEntity exposing (..)
 
-import Data.Extra exposing (date)
 import Date exposing (Date)
 import Json.Decode exposing (Decoder, int, list, nullable, string)
+import Json.Decode.Extra exposing (date)
 import Json.Decode.Pipeline exposing (decode, required)
 
 
-type alias MasterEntity subEntity =
+type alias MasterEntity baseEntity =
     { meta : Meta
-    , subEntity : subEntity
+    , baseEntity : baseEntity
     }
 
 
 type alias Meta =
-    { id : String
-    , updatedAt : String
-    , createdAt : String
+    { appId : String
+    , updatedAt : Date
+    , createdAt : Date
     }
 
 
-metaDecoder : Decoder subEntity -> Decoder (MasterEntity subEntity)
-metaDecoder subDecoder =
-    decode MasterEntity
+metaDecoder : Decoder Meta
+metaDecoder =
+    decode Meta
         |> required "id" string
         |> required "updatedAt" date
         |> required "createdAt" date
@@ -32,3 +32,19 @@ entityDecoder subDecoder =
     decode MasterEntity
         |> required "meta" metaDecoder
         |> required "baseEntity" subDecoder
+
+
+
+{- LENSES -}
+
+
+setBaseEntity : MasterEntity baseEntity -> (a -> baseEntity) -> a -> MasterEntity baseEntity
+setBaseEntity curMaster accessor newVal =
+    let
+        curBase =
+            curMaster.baseEntity
+
+        newBase =
+            { curBase | accessor = newVal }
+    in
+    { curBase | baseEntity = newBase }
